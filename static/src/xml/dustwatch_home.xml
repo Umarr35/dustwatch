@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dustwatch.Home">
+        <div class="o_dustwatch_home d-flex flex-column h-100 overflow-auto p-4">
+
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h1 class="mb-0">DustWatch</h1>
+                    <p class="text-muted mb-0">Real-time dust monitoring overview</p>
+                </div>
+                <button class="btn btn-primary" t-on-click="onRefresh">
+                    <i class="fa fa-refresh me-1"/> Refresh
+                </button>
+            </div>
+
+            <!-- Summary cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <div class="text-muted">PM2.5</div>
+                            <div class="display-6 fw-bold" t-esc="state.pm25"/>
+                            <small class="text-muted">µg/m³</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <div class="text-muted">PM10</div>
+                            <div class="display-6 fw-bold" t-esc="state.pm10"/>
+                            <small class="text-muted">µg/m³</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <div class="text-muted">Active Sensors</div>
+                            <div class="display-6 fw-bold" t-esc="state.sensors"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <div class="text-muted">Alerts</div>
+                            <div class="display-6 fw-bold text-danger" t-esc="state.alerts"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Readings table -->
+            <div class="card">
+                <div class="card-header fw-bold">Latest Readings</div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>PM2.5</th>
+                                <th>PM10</th>
+                                <th>Status</th>
+                                <th>Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.readings" t-as="reading" t-key="reading.id">
+                                <tr>
+                                    <td t-esc="reading.location"/>
+                                    <td t-esc="reading.pm25"/>
+                                    <td t-esc="reading.pm10"/>
+                                    <td>
+                                        <span t-attf-class="badge text-bg-#{reading.status === 'good' ? 'success' : reading.status === 'moderate' ? 'warning' : 'danger'}"
+                                              t-esc="reading.status"/>
+                                    </td>
+                                    <td t-esc="reading.updated"/>
+                                </tr>
+                            </t>
+                            <tr t-if="!state.readings.length">
+                                <td colspan="5" class="text-center text-muted py-4">No readings available.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </t>
+
+</templates>
