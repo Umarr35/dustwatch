@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_dustwatch_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.dustwatch.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_dustwatch_sites" type="object" class="oe_stat_button" icon="fa-sun-o"
+                        invisible="dustwatch_site_count == 0">
+                    <field name="dustwatch_site_count" widget="statinfo" string="Solar Sites"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Solar Assets (DustWatch)" name="dustwatch_sites" invisible="dustwatch_site_count == 0">
+                    <group>
+                        <group string="Portfolio Summary">
+                            <field name="dustwatch_total_capacity_kwp"/>
+                            <field name="dustwatch_total_saved_aed" class="text-success font-weight-bold"/>
+                        </group>
+                    </group>
+                    <field name="dustwatch_site_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="capacity_kwp"/>
+                            <field name="running_loss_aed"/>
+                            <field name="days_since_last_clean"/>
+                            <field name="health_state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

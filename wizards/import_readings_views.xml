@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dustwatch_import_readings_wizard" model="ir.ui.view">
+        <field name="name">dustwatch.import.readings.wizard.form</field>
+        <field name="model">dustwatch.import.readings.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Daily Telemetry Data">
+                <p class="text-muted">
+                    Upload a CSV file containing solar inverter generation data. 
+                    Expected headers: <code>date,sun_hours,actual_kwh,notes</code>.
+                </p>
+                <group>
+                    <field name="site_id"/>
+                    <field name="file_data" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_import_csv" string="Ingest Readings" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_dustwatch_import_readings_wizard" model="ir.actions.act_window">
+        <field name="name">Import Telemetry CSV</field>
+        <field name="res_model">dustwatch.import.readings.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

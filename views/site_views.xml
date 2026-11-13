@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Site Tree / List View with Dynamic Color Decorators -->
+    <record id="view_dustwatch_site_tree" model="ir.ui.view">
+        <field name="name">dustwatch.site.tree</field>
+        <field name="model">dustwatch.site</field>
+        <field name="arch" type="xml">
+            <list string="Solar Sites Portfolio" 
+                  decoration-danger="health_state == 'red'" 
+                  decoration-warning="health_state == 'amber'" 
+                  decoration-success="health_state == 'green'">
+                <field name="name" font-weight="bold"/>
+                <field name="partner_id"/>
+                <field name="capacity_kwp" sum="Total kWp"/>
+                <field name="location"/>
+                <field name="date_last_cleaned"/>
+                <field name="days_since_last_clean"/>
+                <field name="running_loss_aed" sum="Total Forfeited AED" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="cleaning_cost" widget="monetary"/>
+                <field name="cleaning_progress" widget="progressbar"/>
+                <field name="health_state" widget="badge" 
+                       decoration-danger="health_state == 'red'" 
+                       decoration-warning="health_state == 'amber'" 
+                       decoration-success="health_state == 'green'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Site Kanban View (CRM / Operations Style) -->
+    <record id="view_dustwatch_site_kanban" model="ir.ui.view">
+        <field name="name">dustwatch.site.kanban</field>
+        <field name="model">dustwatch.site</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" default_group_by="health_state" sample="1">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="capacity_kwp"/>
+                <field name="running_loss_aed"/>
+                <field name="cleaning_cost"/>
+                <field name="cleaning_progress"/>
+                <field name="health_state"/>
+                <field name="days_since_last_clean"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="o_kanban_record_title" style="font-size: 1.1em;">
+                                    <field name="name"/>
+                                </strong>
+                                <field name="health_state" widget="badge"
+                                       decoration-danger="health_state == 'red'"
+                                       decoration-warning="health_state == 'amber'"
+                                       decoration-success="health_state == 'green'"/>
+                            </div>
+                            <div class="text-muted small mb-2">
+                                <i class="fa fa-building me-1"/> <field name="partner_id"/>
+                                <span class="ms-2"><i class="fa fa-sun-o me-1"/> <field name="capacity_kwp"/> kWp</span>
+                            </div>
+                            <div class="bg-light p-2 rounded mb-2 border">
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Running Loss:</span>
+                                    <strong class="text-danger"><field name="running_loss_aed"/> AED</strong>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Cleaning Threshold:</span>
+                                    <span><field name="cleaning_cost"/> AED</span>
+                                </div>
+                                <div class="mt-1">
+                                    <field name="cleaning_progress" widget="progressbar"/>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span><i class="fa fa-calendar me-1"/> <field name="days_since_last_clean"/> days since clean</span>
+                                <button name="action_trigger_clean" type="object" class="btn btn-sm btn-outline-danger" 
+                                        invisible="health_state != 'red'">
+                                    Dispatch Clean
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Site Form View with Stat Buttons and Notebook Tabs -->
+    <record id="view_dustwatch_site_form" model="ir.ui.view">
+        <field name="name">dustwatch.site.form</field>
+        <field name="model">dustwatch.site</field>
+        <field name="arch" type="xml">
+            <form string="Solar Site">
+                <header>
+                    <button name="action_trigger_clean" string="Dispatch Cleaning Job" type="object" class="btn-primary"
+                            icon="fa-wrench"/>
+                    <field name="health_state" widget="statusbar" statusbar_visible="green,amber,red"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_readings" type="object" class="oe_stat_button" icon="fa-line-chart">
+                            <field name="reading_count" widget="statinfo" string="Readings"/>
+                        </button>
+                        <button name="action_view_jobs" type="object" class="oe_stat_button" icon="fa-check-square-o">
+                            <field name="job_count" widget="statinfo" string="Cleanings"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="e.g. Grand Hyatt Hotel Roof"/></h1>
+                    </div>
+
+                    <group>
+                        <group name="commercial_params" string="Commercial &amp; Tariff Parameters">
+                            <field name="partner_id"/>
+                            <field name="capacity_kwp"/>
+                            <field name="electricity_price"/>
+                            <field name="cleaning_cost"/>
+                        </group>
+                        <group name="status_metrics" string="Live Telemetry Status">
+                            <field name="running_loss_aed" class="text-danger font-weight-bold"/>
+                            <field name="cleaning_progress" widget="progressbar"/>
+                            <field name="date_last_cleaned"/>
+                            <field name="days_since_last_clean"/>
+                            <field name="performance_factor"/>
+                            <field name="location"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Daily Telemetry Readings" name="readings">
+                            <field name="reading_ids" readonly="1">
+                                <list default_order="date desc" limit="10">
+                                    <field name="date"/>
+                                    <field name="sun_hours"/>
+                                    <field name="actual_kwh"/>
+                                    <field name="expected_kwh"/>
+                                    <field name="lost_kwh"/>
+                                    <field name="lost_aed" class="text-danger font-weight-bold"/>
+                                    <field name="soiling_loss_pct"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Cleaning Work Orders" name="jobs">
+                            <field name="job_ids" readonly="1">
+                                <list default_order="date_created desc">
+                                    <field name="name"/>
+                                    <field name="date_created"/>
+                                    <field name="cost"/>
+                                    <field name="recovery_aed_day"/>
+                                    <field name="payback_days"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_dustwatch_site_search" model="ir.ui.view">
+        <field name="name">dustwatch.site.search</field>
+        <field name="model">dustwatch.site</field>
+        <field name="arch" type="xml">
+            <search string="Search Solar Sites">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="location"/>
+                <filter string="Clean Due (Red Alert)" name="filter_red" domain="[('health_state', '=', 'red')]"/>
+                <filter string="Attention Needed (Amber)" name="filter_amber" domain="[('health_state', '=', 'amber')]"/>
+                <filter string="Healthy (Green)" name="filter_green" domain="[('health_state', '=', 'green')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Customer" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Health Status" name="group_by_status" context="{'group_by': 'health_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

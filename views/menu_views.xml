@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Actions -->
+    <record id="action_dustwatch_site" model="ir.actions.act_window">
+        <field name="name">Solar Rooftops</field>
+        <field name="res_model">dustwatch.site</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Register your first solar installation site!
+            </p>
+            <p>
+                DustWatch automatically monitors daily soiling and calculates the optimal cleaning breakeven point.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_dustwatch_job" model="ir.actions.act_window">
+        <field name="name">Cleaning Dispatch Board</field>
+        <field name="res_model">dustwatch.job</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No cleaning jobs currently dispatched.
+            </p>
+            <p>
+                Jobs are automatically proposed when cumulative energy loss equals the cleaning fee.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_dustwatch_reading" model="ir.actions.act_window">
+        <field name="name">Daily Telemetry Analysis</field>
+        <field name="res_model">dustwatch.reading</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No daily telemetry data available.
+            </p>
+            <p>
+                Upload inverter output logs to analyze expected vs actual solar performance.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_dustwatch_customers" model="ir.actions.act_window">
+        <field name="name">Solar Clients</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('dustwatch_site_ids', '!=', False)]</field>
+    </record>
+
+    <!-- Top Root Menu -->
+    <menuitem id="menu_dustwatch_root"
+              name="DustWatch"
+              web_icon="dustwatch,static/description/icon.png"
+              sequence="15"/>
+
+    <!-- Operations Submenu -->
+    <menuitem id="menu_dustwatch_operations"
+              name="Operations"
+              parent="menu_dustwatch_root"
+              sequence="10"/>
+
+    <menuitem id="menu_dustwatch_sites"
+              name="Solar Sites"
+              parent="menu_dustwatch_operations"
+              action="action_dustwatch_site"
+              sequence="10"/>
+
+    <menuitem id="menu_dustwatch_jobs"
+              name="Cleaning Jobs Board"
+              parent="menu_dustwatch_operations"
+              action="action_dustwatch_job"
+              sequence="20"/>
+
+    <menuitem id="menu_dustwatch_readings"
+              name="Telemetry &amp; Trends"
+              parent="menu_dustwatch_operations"
+              action="action_dustwatch_reading"
+              sequence="30"/>
+
+    <!-- Tools Submenu -->
+    <menuitem id="menu_dustwatch_tools"
+              name="Tools &amp; Ingestion"
+              parent="menu_dustwatch_root"
+              sequence="20"/>
+
+    <menuitem id="menu_dustwatch_import"
+              name="Import Telemetry CSV"
+              parent="menu_dustwatch_tools"
+              action="action_dustwatch_import_readings_wizard"
+              sequence="10"/>
+
+    <!-- Configuration Submenu -->
+    <menuitem id="menu_dustwatch_config"
+              name="Directory &amp; Clients"
+              parent="menu_dustwatch_root"
+              sequence="30"/>
+
+    <menuitem id="menu_dustwatch_clients"
+              name="Solar Clients"
+              parent="menu_dustwatch_config"
+              action="action_dustwatch_customers"
+              sequence="10"/>
+</odoo>

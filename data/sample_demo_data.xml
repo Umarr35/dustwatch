@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample Customers -->
+        <record id="partner_grand_hyatt" model="res.partner">
+            <field name="name">Grand Hyatt Dubai Hotel</field>
+            <field name="street">Oud Metha Road</field>
+            <field name="city">Dubai</field>
+            <field name="country_id" ref="base.ae"/>
+            <field name="is_company">True</field>
+            <field name="email">facilities@grandhyattdubai.example</field>
+        </record>
+
+        <record id="partner_alquoz_logistics" model="res.partner">
+            <field name="name">Al Quoz Logistics &amp; Cold Storage</field>
+            <field name="street">Industrial Area 3</field>
+            <field name="city">Dubai</field>
+            <field name="country_id" ref="base.ae"/>
+            <field name="is_company">True</field>
+            <field name="email">operations@alquozlogistics.example</field>
+        </record>
+
+        <record id="partner_emirates_villa" model="res.partner">
+            <field name="name">Dr. Rashid Al-Maktoum (Private Villa)</field>
+            <field name="street">Sector E, Street 14</field>
+            <field name="city">Dubai</field>
+            <field name="country_id" ref="base.ae"/>
+            <field name="is_company">False</field>
+            <field name="email">rashid.villa@example.com</field>
+        </record>
+
+        <!-- Sample Solar Sites -->
+        <record id="site_grand_hyatt" model="dustwatch.site">
+            <field name="name">Grand Hyatt Hotel Main Roof</field>
+            <field name="partner_id" ref="partner_grand_hyatt"/>
+            <field name="capacity_kwp">500.0</field>
+            <field name="electricity_price">0.40</field>
+            <field name="cleaning_cost">1500.0</field>
+            <field name="performance_factor">0.80</field>
+            <field name="location">Oud Metha, Dubai</field>
+            <field name="date_last_cleaned" eval="(datetime.now() - relativedelta(days=41)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <record id="site_alquoz_logistics" model="dustwatch.site">
+            <field name="name">Al Quoz Warehouse Complex 4</field>
+            <field name="partner_id" ref="partner_alquoz_logistics"/>
+            <field name="capacity_kwp">1200.0</field>
+            <field name="electricity_price">0.38</field>
+            <field name="cleaning_cost">3200.0</field>
+            <field name="performance_factor">0.82</field>
+            <field name="location">Al Quoz Industrial 3, Dubai</field>
+            <field name="date_last_cleaned" eval="(datetime.now() - relativedelta(days=18)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <record id="site_emirates_villa" model="dustwatch.site">
+            <field name="name">Emirates Hills Luxury Villa</field>
+            <field name="partner_id" ref="partner_emirates_villa"/>
+            <field name="capacity_kwp">25.0</field>
+            <field name="electricity_price">0.44</field>
+            <field name="cleaning_cost">350.0</field>
+            <field name="performance_factor">0.81</field>
+            <field name="location">Emirates Hills, Dubai</field>
+            <field name="date_last_cleaned" eval="(datetime.now() - relativedelta(days=12)).strftime('%Y-%m-%d')"/>
+        </record>
+    </data>
+</odoo>

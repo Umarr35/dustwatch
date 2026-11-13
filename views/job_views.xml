@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cleaning Job Kanban Board (Dispatched Operations Board) -->
+    <record id="view_dustwatch_job_kanban" model="ir.ui.view">
+        <field name="name">dustwatch.job.kanban</field>
+        <field name="model">dustwatch.job</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" quick_create="false">
+                <field name="name"/>
+                <field name="site_id"/>
+                <field name="partner_id"/>
+                <field name="cost"/>
+                <field name="trigger_loss_aed"/>
+                <field name="recovery_aed_day"/>
+                <field name="payback_days"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                <field name="state" widget="badge"/>
+                            </div>
+                            <div class="mb-2">
+                                <i class="fa fa-sun-o me-1"/> <strong><field name="site_id"/></strong>
+                                <div class="text-muted small"><field name="partner_id"/></div>
+                            </div>
+                            <div class="bg-light p-2 rounded mb-2 border small">
+                                <div class="d-flex justify-content-between">
+                                    <span>Cleaning Fee:</span>
+                                    <strong><field name="cost"/> AED</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted">
+                                    <span>Triggered At:</span>
+                                    <span><field name="trigger_loss_aed"/> AED</span>
+                                </div>
+                                <t t-if="record.state.raw_value == 'done'">
+                                    <div class="d-flex justify-content-between text-success mt-1 pt-1 border-top">
+                                        <span>Reclaimed / Day:</span>
+                                        <strong><field name="recovery_aed_day"/> AED</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-success">
+                                        <span>Payback Speed:</span>
+                                        <strong><field name="payback_days"/> Days</strong>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button name="action_schedule" string="Schedule" type="object" 
+                                        class="btn btn-sm btn-outline-primary" invisible="state != 'proposed'">
+                                    Schedule Crew
+                                </button>
+                                <button name="action_mark_done" string="Mark Done" type="object" 
+                                        class="btn btn-sm btn-success" invisible="state != 'scheduled'">
+                                    Complete &amp; Audit
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Cleaning Job Tree View -->
+    <record id="view_dustwatch_job_tree" model="ir.ui.view">
+        <field name="name">dustwatch.job.tree</field>
+        <field name="model">dustwatch.job</field>
+        <field name="arch" type="xml">
+            <list string="Cleaning Work Orders" default_order="date_created desc">
+                <field name="name"/>
+                <field name="site_id"/>
+                <field name="partner_id"/>
+                <field name="date_created"/>
+                <field name="date_completed"/>
+                <field name="cost" sum="Total Cleaning Costs"/>
+                <field name="recovery_aed_day" sum="Daily Revenue Reclaimed"/>
+                <field name="payback_days"/>
+                <field name="is_fault_flagged" widget="boolean_toggle"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Cleaning Job Form View -->
+    <record id="view_dustwatch_job_form" model="ir.ui.view">
+        <field name="name">dustwatch.job.form</field>
+        <field name="model">dustwatch.job</field>
+        <field name="arch" type="xml">
+            <form string="Solar Cleaning Job">
+                <header>
+                    <button name="action_schedule" string="Dispatch Crew" type="object" class="btn-primary" 
+                            invisible="state != 'proposed'"/>
+                    <button name="action_mark_done" string="Mark Done &amp; Recalibrate" type="object" class="btn-success" 
+                            invisible="state != 'scheduled'"/>
+                    <button name="action_cancel" string="Cancel Job" type="object" 
+                            invisible="state in ['done', 'cancelled']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="proposed,scheduled,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Job Specification">
+                            <field name="site_id"/>
+                            <field name="partner_id"/>
+                            <field name="cost"/>
+                            <field name="trigger_loss_aed"/>
+                        </group>
+                        <group string="Schedule &amp; Execution">
+                            <field name="date_created"/>
+                            <field name="date_scheduled"/>
+                            <field name="date_completed"/>
+                            <field name="water_saved_liters"/>
+                        </group>
+                    </group>
+                    <group string="Post-Clean Audit &amp; Payback Analytics" invisible="state != 'done'">
+                        <group>
+                            <field name="recovery_kwh_day"/>
+                            <field name="recovery_aed_day" class="text-success font-weight-bold"/>
+                            <field name="payback_days" class="font-weight-bold"/>
+                        </group>
+                        <group>
+                            <field name="is_fault_flagged" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Technician &amp; Execution Notes">
+                            <field name="notes" placeholder="Notes from field crew (e.g. high cement dust, drone wash utilized)..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

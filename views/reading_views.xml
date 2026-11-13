@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reading Tree / List View -->
+    <record id="view_dustwatch_reading_tree" model="ir.ui.view">
+        <field name="name">dustwatch.reading.tree</field>
+        <field name="model">dustwatch.reading</field>
+        <field name="arch" type="xml">
+            <list string="Solar Daily Readings" default_order="date desc">
+                <field name="date"/>
+                <field name="site_id"/>
+                <field name="sun_hours"/>
+                <field name="actual_kwh" sum="Total Actual kWh"/>
+                <field name="expected_kwh" sum="Total Expected kWh"/>
+                <field name="lost_kwh" sum="Total Lost kWh"/>
+                <field name="lost_aed" sum="Total Money Lost AED" class="text-danger font-weight-bold"/>
+                <field name="soiling_loss_pct"/>
+                <field name="is_post_clean" widget="boolean_toggle"/>
+                <field name="notes"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Reading Graph View (2-Line Comparison: Expected vs Actual) -->
+    <record id="view_dustwatch_reading_graph" model="ir.ui.view">
+        <field name="name">dustwatch.reading.graph</field>
+        <field name="model">dustwatch.reading</field>
+        <field name="arch" type="xml">
+            <graph string="Solar Telemetry Analysis" type="line" sample="1">
+                <field name="date" interval="day"/>
+                <field name="actual_kwh" type="measure"/>
+                <field name="expected_kwh" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Reading Pivot View -->
+    <record id="view_dustwatch_reading_pivot" model="ir.ui.view">
+        <field name="name">dustwatch.reading.pivot</field>
+        <field name="model">dustwatch.reading</field>
+        <field name="arch" type="xml">
+            <pivot string="Solar Telemetry Summary" sample="1">
+                <field name="site_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="actual_kwh" type="measure"/>
+                <field name="lost_kwh" type="measure"/>
+                <field name="lost_aed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Reading Form View -->
+    <record id="view_dustwatch_reading_form" model="ir.ui.view">
+        <field name="name">dustwatch.reading.form</field>
+        <field name="model">dustwatch.reading</field>
+        <field name="arch" type="xml">
+            <form string="Daily Telemetry Reading">
+                <sheet>
+                    <group>
+                        <group string="Telemetry Input">
+                            <field name="site_id"/>
+                            <field name="date"/>
+                            <field name="sun_hours"/>
+                            <field name="actual_kwh"/>
+                        </group>
+                        <group string="DustWatch Calculation Output">
+                            <field name="expected_kwh"/>
+                            <field name="lost_kwh"/>
+                            <field name="lost_aed" class="text-danger font-weight-bold"/>
+                            <field name="soiling_loss_pct"/>
+                            <field name="is_post_clean"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="e.g. High ambient temperature, sandstorm, inverter maintenance"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dustwatch_site_user,dustwatch.site.user,model_dustwatch_site,group_dustwatch_user,1,1,0,0
+access_dustwatch_site_manager,dustwatch.site.manager,model_dustwatch_site,group_dustwatch_manager,1,1,1,1
+access_dustwatch_reading_user,dustwatch.reading.user,model_dustwatch_reading,group_dustwatch_user,1,1,1,0
+access_dustwatch_reading_manager,dustwatch.reading.manager,model_dustwatch_reading,group_dustwatch_manager,1,1,1,1
+access_dustwatch_job_user,dustwatch.job.user,model_dustwatch_job,group_dustwatch_user,1,1,1,0
+access_dustwatch_job_manager,dustwatch.job.manager,model_dustwatch_job,group_dustwatch_manager,1,1,1,1
+access_dustwatch_wizard_user,dustwatch.wizard.user,model_dustwatch_import_readings_wizard,group_dustwatch_user,1,1,1,1
+access_dustwatch_wizard_manager,dustwatch.wizard.manager,model_dustwatch_import_readings_wizard,group_dustwatch_manager,1,1,1,1
