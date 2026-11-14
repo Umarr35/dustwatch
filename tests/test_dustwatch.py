@@ -574,3 +574,11 @@ class TestDustwatch(TransactionCase):
         self.assertEqual(map_action['context']['dustwatch_site_id'], self.t1.id)
         with self.assertRaises(ValidationError):
             self.t1.write({'latitude': 91.0})
+
+    def test_sample_sites_have_map_coordinates(self):
+        al_noor = self.env.ref('dustwatch.site_al_noor')
+        jebel_ali = self.env.ref('dustwatch.site_jebel_ali')
+        self.assertAlmostEqual(al_noor.latitude, 25.2048, places=4)
+        self.assertAlmostEqual(al_noor.longitude, 55.2708, places=4)
+        self.assertAlmostEqual(jebel_ali.latitude, 24.9857, places=4)
+        self.assertAlmostEqual(jebel_ali.longitude, 55.0273, places=4)

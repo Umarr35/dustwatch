@@ -7,7 +7,7 @@
 - Added 15-second Odoo-data refresh, searchable status filters, selectable site nodes, and full reading/cleaning history.
 - Added CRM opportunity map entry and canonical links to the existing Fleet, Readings, Cleaning jobs, and site form records.
 - Applied the black, white, and orange control-room styling from the Tipsy Taxi admin dashboard.
-- Verified all 16 DustWatch tests pass.
+- Verified all 17 DustWatch tests pass.
 
 ## Integration update - 2026-11-14
 
