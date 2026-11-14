@@ -24,7 +24,7 @@ DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. I
 
 ## Weather outlook
 
-After weather is enabled and its first refresh completes, the site form and live map show next-day rain, humidity / dew risk, wind, peak-sun-hours, and planned output. Weather is an advisory: it never creates or cancels cleaning work. A reading is matched to the latest forecast captured before that Dubai day began, so actual output can be compared with the weather-based output plan.
+After weather is enabled and its first refresh completes, the site form and live map show next-day rain, humidity / dew risk, wind, peak-sun-hours, and planned output. Map circles show an estimated weather range around each installation and a combined cluster footprint for nearby sites. The range and support indicator are transparent heuristics, not provider-issued accuracy values. Weather is an advisory: it never creates or cancels cleaning work. A reading is matched to the latest forecast captured before that Dubai day began, so actual output can be compared with the weather-based output plan.
 
 Cross-customer regional signals are a separate opt-in. When enabled, DustWatch looks for a large same-day output shortfall across at least three sites and two customers in a coarse region. It stores only aggregate counts and weather context, not site or customer names. Signals are experimental anomaly indicators, not official dust-storm warnings.
 

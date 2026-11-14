@@ -1,5 +1,11 @@
 # Change log
 
+## Weather coverage map - 2026-11-15
+
+- Added estimated spatial coverage circles around mapped solar installations and shared cluster footprints for nearby sites.
+- Added a per-site range and support indicator based on proximity and cluster size; documented that these are heuristics, not calibrated forecast accuracy.
+- Documented the Google Weather API trade-offs and why the current Open-Meteo feed remains the solar-output planning source.
+
 ## Weather forecast update - 2026-11-14
 
 - Added opt-in Open-Meteo forecasts for Dubai rain, humidity / dew risk, wind, weather codes, and solar radiation.

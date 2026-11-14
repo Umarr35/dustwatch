@@ -229,7 +229,18 @@
     .o_dw_map_label { fill: rgba(250, 250, 250, .16); font: 800 34px sans-serif; letter-spacing: 12px; text-anchor: middle; }
     .o_dw_map_sub_label { fill: #71717a; font: 700 10px sans-serif; letter-spacing: 3px; }
 
-    .o_dw_map_nodes { position: absolute; inset: 0; }
+    .o_dw_weather_coverage_areas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    .o_dw_weather_coverage_area {
+        position: absolute;
+        display: block;
+        border: 1px solid rgba(251, 191, 36, .34);
+        border-radius: 50%;
+        background: rgba(245, 158, 11, .035);
+        transform: translate(-50%, -50%);
+
+        &.is-cluster { border: 1px dashed rgba(251, 146, 60, .58); background: rgba(245, 158, 11, .015); }
+    }
+    .o_dw_map_nodes { position: absolute; inset: 0; z-index: 2; }
     .o_dw_map_node {
         position: absolute;
         display: block;
@@ -277,6 +288,7 @@
         span { display: flex; align-items: center; gap: 6px; }
         .o_dw_coordinates_count { margin-left: auto; color: #71717a; }
     }
+    .o_dw_coverage_legend { display: inline-block; width: 11px; height: 11px; border: 1px solid rgba(251, 191, 36, .65); border-radius: 50%; background: rgba(245, 158, 11, .12); }
 
     .o_dw_site_panel { display: flex; flex-direction: column; min-height: 500px; }
     .o_dw_site_panel_header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 20px 19px 15px; border-bottom: 1px solid var(--dw-border); h2 { margin-top: 5px; font-size: 16px; font-weight: 750; line-height: 1.2; } p { margin-top: 5px; color: var(--dw-muted); font-size: 11px; } }
@@ -291,6 +303,11 @@
     .o_dw_weather_reason { margin: 8px 0 10px !important; color: #a1a1aa; font-size: 9px; line-height: 1.45; }
     .o_dw_weather_source { display: block; margin-bottom: 8px; color: #71717a; font-size: 8px; a { color: #fbbf24; text-decoration: underline; } }
     .o_dw_weather_grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; div { min-width: 0; padding: 7px; border: 1px solid #27272a; border-radius: 7px; background: #111113; } span { display: block; color: #71717a; font-size: 8px; } strong { display: block; margin-top: 4px; color: #f4f4f5; font-size: 10px; } }
+
+    .o_dw_coverage_summary { margin: 0 18px 15px; padding: 12px; border: 1px solid rgba(245, 158, 11, .24); border-radius: 10px; background: rgba(120, 53, 15, .08); }
+    .o_dw_coverage_summary_heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; strong { color: #fbbf24; font-size: 14px; } }
+    .o_dw_coverage_summary_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 9px; div { min-width: 0; padding: 7px; border: 1px solid #3f3f46; border-radius: 7px; background: #111113; } span { display: block; color: #71717a; font-size: 8px; } strong { display: block; margin-top: 4px; color: #f4f4f5; font-size: 10px; } }
+    .o_dw_coverage_summary p { margin-top: 8px; color: #a1a1aa; font-size: 8px; line-height: 1.5; }
 
     .o_dw_actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 0 18px 16px; }
     .o_dw_button_primary, .o_dw_button_secondary { min-height: 34px; padding: 7px 9px; border-radius: 8px; font-size: 10px; font-weight: 750; transition: filter 120ms ease, border-color 120ms ease; }

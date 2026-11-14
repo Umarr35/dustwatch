@@ -15,6 +15,8 @@ flowchart LR
   S --> MAP[Live map client action]
   MAP -->|node click| S
   MAP -->|site history| R
+  MAP -->|nearby coordinates| RANGE[Estimated local weather coverage]
+  RANGE -->|support heuristic; not measured accuracy| MAP
   WX[Weather provider] --> WF[Issued daily forecast snapshots]
   S --> WF
   WF --> WA[Rain and damp-weather advisory]

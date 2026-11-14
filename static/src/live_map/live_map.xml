@@ -95,6 +95,14 @@
                                     <text x="135" y="130" class="o_dw_map_sub_label">JEBEL ALI</text>
                                     <text x="743" y="145" class="o_dw_map_sub_label">DOWNTOWN</text>
                                 </svg>
+                                <div class="o_dw_weather_coverage_areas" aria-hidden="true">
+                                    <t t-foreach="visibleWeatherClusters" t-as="cluster" t-key="cluster.key">
+                                        <span class="o_dw_weather_coverage_area is-cluster" t-att-style="clusterStyle(cluster)"/>
+                                    </t>
+                                    <t t-foreach="locatedSites" t-as="site" t-key="site.id">
+                                        <span class="o_dw_weather_coverage_area" t-att-style="coverageStyle(site)"/>
+                                    </t>
+                                </div>
                                 <div class="o_dw_map_nodes">
                                     <t t-foreach="locatedSites" t-as="site" t-key="site.id">
                                         <button type="button"
@@ -130,6 +138,7 @@
                         <span><i class="o_dw_legend_dot is-red"/>Clean due</span>
                         <span><i class="o_dw_legend_dot is-amber"/>Approaching</span>
                         <span><i class="o_dw_legend_dot is-green"/>On track</span>
+                        <span><i class="o_dw_coverage_legend"/>Weather range</span>
                         <span class="o_dw_coordinates_count"><span t-esc="locatedSites.length"/> / <span t-esc="stats.total"/> sites mapped</span>
                     </footer>
                 </div>
@@ -180,6 +189,20 @@
                                 <div><span>Peak-sun hours</span><strong t-esc="number(state.weather.weather_peak_sun_hours, 1)"/></div>
                                 <div><span>Planned output</span><strong t-esc="money(state.weather.weather_expected_kwh)"/></div>
                             </div>
+                        </section>
+
+                        <section t-if="selectedCoverage" class="o_dw_coverage_summary" aria-label="Estimated weather coverage">
+                            <div class="o_dw_coverage_summary_heading">
+                                <span class="o_dw_eyebrow">SPATIAL OUTLOOK</span>
+                                <strong>±<t t-esc="selectedCoverage.rangeKm"/> km</strong>
+                            </div>
+                            <div class="o_dw_coverage_summary_grid">
+                                <div><span>Nearby within 8 km</span><strong><t t-esc="selectedCoverage.nearbyCount"/></strong></div>
+                                <div><span>Connected cluster</span><strong><t t-esc="selectedCoverage.siteCount"/> sites</strong></div>
+                                <div><span>Cluster radius</span><strong><t t-esc="selectedCoverage.clusterRadiusKm"/> km</strong></div>
+                                <div><span>Support indicator</span><strong><t t-esc="selectedCoverage.supportScore"/> / 100</strong></div>
+                            </div>
+                            <p>Nearby sites are grouped when linked within 8 km. The range uses a rough 10 km weather-model scale plus local site density; the support indicator is a heuristic, not measured forecast accuracy.</p>
                         </section>
 
                         <div class="o_dw_actions">

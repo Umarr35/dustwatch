@@ -8,6 +8,10 @@ import { useService } from "@web/core/utils/hooks";
 const REFRESH_MS = 15000;
 const WEATHER_REFRESH_MS = 5 * 60 * 1000;
 const DUBAI_CENTER = { lat: 25.2048, lng: 55.2708 };
+const WEATHER_NEIGHBOR_DISTANCE_KM = 8;
+const WEATHER_MODEL_SCALE_KM = 10;
+const ISOLATED_SITE_RANGE_KM = WEATHER_MODEL_SCALE_KM * 2;
+const EARTH_RADIUS_KM = 6371;
 const SITE_WEATHER_FIELDS = [
     "weather_forecast_date", "weather_conditions", "weather_precipitation_mm",
     "weather_precipitation_probability", "weather_humidity_max", "weather_dew_risk_hours",
@@ -39,6 +43,131 @@ const MAP_STYLE = [
 function hasCoordinates(site) {
     return Number.isFinite(Number(site.latitude)) && Number.isFinite(Number(site.longitude))
         && Number(site.latitude) !== 0 && Number(site.longitude) !== 0;
+}
+
+function distanceKm(first, second) {
+    const radians = (degrees) => degrees * Math.PI / 180;
+    const lat1 = radians(Number(first.latitude));
+    const lat2 = radians(Number(second.latitude));
+    const deltaLat = lat2 - lat1;
+    const deltaLng = radians(Number(second.longitude) - Number(first.longitude));
+    const haversine = Math.sin(deltaLat / 2) ** 2
+        + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+    return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(Math.min(1, haversine)));
+}
+
+function buildWeatherCoverage(sites) {
+    const located = sites.filter(hasCoordinates);
+    const parent = new Map(located.map((site) => [site.id, site.id]));
+    const nearbyCounts = new Map(located.map((site) => [site.id, 1]));
+    const find = (id) => {
+        let root = id;
+        while (parent.get(root) !== root) root = parent.get(root);
+        while (parent.get(id) !== id) {
+            const next = parent.get(id);
+            parent.set(id, root);
+            id = next;
+        }
+        return root;
+    };
+    const union = (firstId, secondId) => {
+        const firstRoot = find(firstId);
+        const secondRoot = find(secondId);
+        if (firstRoot !== secondRoot) parent.set(Math.max(firstRoot, secondRoot), Math.min(firstRoot, secondRoot));
+    };
+    // Dubai-focused grid: a 0.05-degree cell is under the 8 km link distance.
+    // Join sites inside each cell once, then compare only nearby cells.
+    const cellSize = 0.05;
+    const cells = new Map();
+    const cellFor = (site) => [
+        Math.floor(Number(site.latitude) / cellSize),
+        Math.floor(Number(site.longitude) / cellSize),
+    ];
+    for (const site of located) {
+        const [latCell, lngCell] = cellFor(site);
+        const key = `${latCell}:${lngCell}`;
+        if (!cells.has(key)) cells.set(key, []);
+        cells.get(key).push(site);
+    }
+    for (const members of cells.values()) {
+        members.forEach((site) => nearbyCounts.set(site.id, members.length));
+        for (let index = 1; index < members.length; index++) {
+            union(members[0].id, members[index].id);
+        }
+    }
+    for (const site of located) {
+        const [latCell, lngCell] = cellFor(site);
+        const ownKey = `${latCell}:${lngCell}`;
+        for (let latOffset = -2; latOffset <= 2; latOffset++) {
+            for (let lngOffset = -2; lngOffset <= 2; lngOffset++) {
+                const neighborKey = `${latCell + latOffset}:${lngCell + lngOffset}`;
+                if (neighborKey === ownKey) continue;
+                const candidates = cells.get(neighborKey) || [];
+                for (const candidate of candidates) {
+                    if (candidate.id > site.id && distanceKm(site, candidate) <= WEATHER_NEIGHBOR_DISTANCE_KM) {
+                        union(site.id, candidate.id);
+                        nearbyCounts.set(site.id, nearbyCounts.get(site.id) + 1);
+                        nearbyCounts.set(candidate.id, nearbyCounts.get(candidate.id) + 1);
+                    }
+                }
+            }
+        }
+    }
+
+    const grouped = new Map();
+    for (const site of located) {
+        const root = find(site.id);
+        if (!grouped.has(root)) grouped.set(root, []);
+        grouped.get(root).push(site);
+    }
+
+    const bySite = new Map();
+    const clusters = [];
+    for (const [root, members] of grouped.entries()) {
+        const center = {
+            latitude: members.reduce((sum, site) => sum + Number(site.latitude), 0) / members.length,
+            longitude: members.reduce((sum, site) => sum + Number(site.longitude), 0) / members.length,
+        };
+        const extentKm = Math.max(0, ...members.map((site) => distanceKm(site, {
+            latitude: center.latitude,
+            longitude: center.longitude,
+        })));
+        const clusterRadiusKm = members.length === 1
+            ? ISOLATED_SITE_RANGE_KM
+            : Math.ceil(WEATHER_MODEL_SCALE_KM + extentKm);
+        const clusterKey = `cluster-${root}`;
+        const siteIds = members.map((site) => site.id);
+        clusters.push({
+            key: clusterKey,
+            siteIds,
+            siteCount: members.length,
+            latitude: center.latitude,
+            longitude: center.longitude,
+            radiusKm: clusterRadiusKm,
+        });
+        for (const site of members) {
+            const nearbyCount = nearbyCounts.get(site.id) || 1;
+            const distanceToCenterKm = distanceKm(site, {
+                latitude: center.latitude,
+                longitude: center.longitude,
+            });
+            const supportScore = Math.max(20, Math.min(85,
+                Math.round(32 + 12 * Math.log2(nearbyCount) - Math.min(15, distanceToCenterKm * 0.7))));
+            const rangeKm = nearbyCount === 1
+                ? ISOLATED_SITE_RANGE_KM
+                : Math.ceil(WEATHER_MODEL_SCALE_KM + 10 / Math.sqrt(nearbyCount) + distanceToCenterKm * 0.2);
+            bySite.set(site.id, {
+                clusterKey,
+                siteCount: members.length,
+                nearbyCount,
+                distanceToCenterKm: Math.round(distanceToCenterKm * 10) / 10,
+                clusterRadiusKm,
+                rangeKm,
+                supportScore,
+            });
+        }
+    }
+    return { bySite, clusters };
 }
 
 function statusColor(status) {
@@ -106,6 +235,10 @@ export class DustwatchLiveMap extends Component {
         });
         this.map = null;
         this.markers = new Map();
+        this.coverageCircles = new Map();
+        this.clusterCircles = new Map();
+        this.weatherCoverageBySite = new Map();
+        this.weatherCoverageClusters = [];
         this.didFitBounds = false;
         this.refreshTimer = null;
         this.weatherSiteId = false;
@@ -121,7 +254,11 @@ export class DustwatchLiveMap extends Component {
         onWillUnmount(() => {
             clearInterval(this.refreshTimer);
             this.markers.forEach((marker) => marker.setMap(null));
+            this.coverageCircles.forEach((circle) => circle.setMap(null));
+            this.clusterCircles.forEach((circle) => circle.setMap(null));
             this.markers.clear();
+            this.coverageCircles.clear();
+            this.clusterCircles.clear();
             this.map = null;
         });
     }
@@ -136,6 +273,16 @@ export class DustwatchLiveMap extends Component {
 
     get locatedSites() {
         return this.filteredSites.filter(hasCoordinates);
+    }
+
+    get selectedCoverage() {
+        return this.weatherCoverageBySite.get(this.state.selectedId) || false;
+    }
+
+    get visibleWeatherClusters() {
+        const visibleIds = new Set(this.locatedSites.map((site) => site.id));
+        return this.weatherCoverageClusters.filter((cluster) => cluster.siteCount > 1
+            && cluster.siteIds.some((id) => visibleIds.has(id)));
     }
 
     get filteredSites() {
@@ -176,6 +323,9 @@ export class DustwatchLiveMap extends Component {
                 { order: "urgency_sequence,avg_daily_loss desc,id", limit: 5000 }
             );
             this.state.sites = sites;
+            const coverage = buildWeatherCoverage(sites);
+            this.weatherCoverageBySite = coverage.bySite;
+            this.weatherCoverageClusters = coverage.clusters;
             this.state.error = "";
             this.state.live = true;
             this.state.lastUpdated = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -319,8 +469,61 @@ export class DustwatchLiveMap extends Component {
                 this.markers.delete(id);
             }
         }
+        for (const [id, circle] of this.coverageCircles.entries()) {
+            if (!visibleIds.has(id)) {
+                circle.setMap(null);
+                this.coverageCircles.delete(id);
+            }
+        }
+        const visibleClusters = this.visibleWeatherClusters;
+        const visibleClusterKeys = new Set(visibleClusters.map((cluster) => cluster.key));
+        for (const [key, circle] of this.clusterCircles.entries()) {
+            if (!visibleClusterKeys.has(key)) {
+                circle.setMap(null);
+                this.clusterCircles.delete(key);
+            }
+        }
+        for (const cluster of visibleClusters) {
+            const options = {
+                center: { lat: cluster.latitude, lng: cluster.longitude },
+                radius: cluster.radiusKm * 1000,
+                strokeColor: "#fb923c",
+                strokeOpacity: 0.55,
+                strokeWeight: 2,
+                fillColor: "#f59e0b",
+                fillOpacity: 0.025,
+                clickable: false,
+                zIndex: 1,
+            };
+            let circle = this.clusterCircles.get(cluster.key);
+            if (!circle) {
+                circle = new window.google.maps.Circle({ ...options, map: this.map });
+                this.clusterCircles.set(cluster.key, circle);
+            } else {
+                circle.setOptions(options);
+            }
+        }
         for (const site of visible) {
             const position = { lat: Number(site.latitude), lng: Number(site.longitude) };
+            const coverage = this.weatherCoverageBySite.get(site.id);
+            const coverageOptions = {
+                center: position,
+                radius: (coverage?.rangeKm || ISOLATED_SITE_RANGE_KM) * 1000,
+                strokeColor: "#fbbf24",
+                strokeOpacity: 0.36,
+                strokeWeight: 1,
+                fillColor: "#f59e0b",
+                fillOpacity: 0.035,
+                clickable: false,
+                zIndex: 2,
+            };
+            let coverageCircle = this.coverageCircles.get(site.id);
+            if (!coverageCircle) {
+                coverageCircle = new window.google.maps.Circle({ ...coverageOptions, map: this.map });
+                this.coverageCircles.set(site.id, coverageCircle);
+            } else {
+                coverageCircle.setOptions(coverageOptions);
+            }
             let marker = this.markers.get(site.id);
             if (!marker) {
                 marker = new window.google.maps.Marker({ map: this.map, position });
@@ -330,6 +533,7 @@ export class DustwatchLiveMap extends Component {
                 marker.setPosition(position);
             }
             marker.setTitle(site.name);
+            marker.setZIndex(10);
             marker.setIcon({
                 path: window.google.maps.SymbolPath.CIRCLE,
                 scale: site.id === this.state.selectedId ? 11 : 8,
@@ -374,11 +578,27 @@ export class DustwatchLiveMap extends Component {
     }
 
     nodeStyle(site) {
-        const lng = Number(site.longitude);
-        const lat = Number(site.latitude);
+        return `${this.mapPointStyle(Number(site.latitude), Number(site.longitude))};--node-color:${statusColor(site.status)}`;
+    }
+
+    coverageStyle(site) {
+        const coverage = this.weatherCoverageBySite.get(site.id);
+        const radiusKm = coverage?.rangeKm || ISOLATED_SITE_RANGE_KM;
+        const width = Math.min(100, (radiusKm * 2 / 72) * 84);
+        const height = Math.min(100, (radiusKm * 2 / 78) * 84);
+        return `${this.mapPointStyle(Number(site.latitude), Number(site.longitude))};width:${width}%;height:${height}%`;
+    }
+
+    clusterStyle(cluster) {
+        const width = Math.min(100, (cluster.radiusKm * 2 / 72) * 84);
+        const height = Math.min(100, (cluster.radiusKm * 2 / 78) * 84);
+        return `${this.mapPointStyle(cluster.latitude, cluster.longitude)};width:${width}%;height:${height}%`;
+    }
+
+    mapPointStyle(lat, lng) {
         const left = Math.max(5, Math.min(95, 8 + ((lng - 54.90) / 0.72) * 84));
         const top = Math.max(6, Math.min(94, 92 - ((lat - 24.78) / 0.70) * 84));
-        return `left:${left}%;top:${top}%;--node-color:${statusColor(site.status)}`;
+        return `left:${left}%;top:${top}%`;
     }
 
     selectFromSearch(siteId) {
