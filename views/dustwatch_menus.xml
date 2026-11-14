@@ -2,8 +2,7 @@
 <!--
         UI-00  Menus
 
-        DustWatch                    app menu with its own icon
-        |- Live map                  live Dubai fleet status
+        DustWatch                    opens the live Dubai fleet map
         |- Fleet priority            UI-01
         |- Cleaning jobs             UI-04
         |- Readings                  UI-03
@@ -15,9 +14,7 @@
         SEC-07: the app menu is limited to the Crew group (managers are crew
         as well), so a user in neither group does not see DustWatch.
      -->
-<menuitem id="menu_dustwatch_root" name="DustWatch" web_icon="dustwatch,static/description/icon.svg" groups="dustwatch.group_dustwatch_crew" sequence="10"/>
-<!--  The live map opens first; each node opens the same canonical site record.  -->
-<menuitem id="menu_dustwatch_live_map" name="Live map" parent="menu_dustwatch_root" action="action_dustwatch_live_map" sequence="5"/>
+<menuitem id="menu_dustwatch_root" name="DustWatch" web_icon="dustwatch,static/description/icon.svg" action="action_dustwatch_live_map" groups="dustwatch.group_dustwatch_crew" sequence="10"/>
 <menuitem id="menu_dustwatch_fleet" name="Fleet priority" parent="menu_dustwatch_root" action="action_dustwatch_site_fleet" sequence="10"/>
 <menuitem id="menu_dustwatch_cleaning_jobs" name="Cleaning jobs" parent="menu_dustwatch_root" action="action_dustwatch_cleaning_job" sequence="20"/>
 <menuitem id="menu_dustwatch_readings" name="Readings" parent="menu_dustwatch_root" action="action_dustwatch_reading" sequence="30"/>

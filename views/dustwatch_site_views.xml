@@ -8,7 +8,7 @@
 <field name="name">dustwatch.site.list</field>
 <field name="model">dustwatch.site</field>
 <field name="arch" type="xml">
-<list decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'">
+<list class="o_dustwatch_view" decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'">
 <!--  FR-FLT-04: the decoration attributes above give the row
                      text the colour of the status.  -->
 <!--  Hidden columns: needed by the money columns and by the
@@ -42,7 +42,7 @@
 <field name="name">dustwatch.site.kanban</field>
 <field name="model">dustwatch.site</field>
 <field name="arch" type="xml">
-<kanban default_group_by="status" records_draggable="0" groups_draggable="0" group_create="0" quick_create="0">
+<kanban class="o_dustwatch_view" default_group_by="status" records_draggable="0" groups_draggable="0" group_create="0" quick_create="0">
 <!--  Status is calculated, so cards cannot be dragged between
                      columns and no column can be added.  -->
 <field name="currency_id"/>
@@ -88,7 +88,7 @@ days
 <field name="name">dustwatch.site.graph</field>
 <field name="model">dustwatch.site</field>
 <field name="arch" type="xml">
-<graph type="bar" order="DESC">
+<graph class="o_dustwatch_view" type="bar" order="DESC">
 <field name="name"/>
 <field name="running_loss" type="measure"/>
 </graph>
@@ -101,7 +101,7 @@ days
 <field name="name">dustwatch.site.form</field>
 <field name="model">dustwatch.site</field>
 <field name="arch" type="xml">
-<form string="Solar Site">
+<form string="Solar Site" class="o_dustwatch_view">
 <header>
 <!--  SEC-04: "Clean now vs wait" for everyone; the other
                          three buttons for managers only.  -->

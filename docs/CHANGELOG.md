@@ -1,5 +1,13 @@
 # Change log
 
+## DustWatch usability update - 2026-11-14
+
+- Made the DustWatch app tab open its live fleet map and removed the duplicate Live map submenu.
+- Fixed the map dashboard scroll container so its full contents remain reachable on desktop and mobile.
+- Applied the charcoal, orange, and white theme to fleet, readings, cleaning, reporting, and record views.
+- Added a direct Website settings link when the Google Maps API key is missing; the interactive coordinate map remains usable without it.
+- Verified the Odoo module upgrade and all 17 DustWatch tests pass; the Odoo server is running locally on port 8070.
+
 ## Live map update - 2026-11-14
 
 - Added site coordinates, input validation, and a safe coordinate backfill for the existing demo records.

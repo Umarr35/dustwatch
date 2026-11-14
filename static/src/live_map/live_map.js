@@ -52,7 +52,14 @@ function mapsPromise(apiKey) {
             script.async = true;
             script.defer = true;
             script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly`;
-            script.onload = () => resolve(window.google.maps);
+            script.onload = () => {
+                if (!window.google?.maps) {
+                    delete window.__dustwatchMapsPromise;
+                    reject(new Error("Google Maps loaded without its map library."));
+                    return;
+                }
+                resolve(window.google.maps);
+            };
             script.onerror = () => {
                 delete window.__dustwatchMapsPromise;
                 reject(new Error("Google Maps could not be loaded."));
@@ -82,6 +89,7 @@ export class DustwatchLiveMap extends Component {
             historyLoading: false,
             mapMode: "canvas",
             mapMessage: "",
+            mapKeyMissing: false,
             lastUpdated: "—",
             live: false,
             zoom: 1,
@@ -227,7 +235,8 @@ export class DustwatchLiveMap extends Component {
             const settings = typeof response === "string" ? JSON.parse(response) : response;
             const apiKey = settings?.google_maps_api_key || "";
             if (!apiKey) {
-                this.state.mapMessage = "Street map is not configured yet. Site pins remain interactive on the Dubai coordinate map.";
+                this.state.mapKeyMissing = true;
+                this.state.mapMessage = "Add a Google Maps API key in Website settings to enable live street tiles. Site pins remain interactive.";
                 return;
             }
             await mapsPromise(apiKey);
@@ -247,10 +256,12 @@ export class DustwatchLiveMap extends Component {
             });
             this.state.mapMode = "google";
             this.state.mapMessage = "";
+            this.state.mapKeyMissing = false;
             this.map.addListener("click", () => this.selectSite(false));
             this.syncGoogleMarkers();
         } catch (error) {
             console.warn("DustWatch: Google Maps unavailable; using the Dubai coordinate map", error);
+            this.state.mapKeyMissing = false;
             this.state.mapMessage = "Street map could not load. The coordinate map is still live and selectable.";
         }
     }

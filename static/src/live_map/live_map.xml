@@ -118,6 +118,7 @@
                         <div t-if="state.mapMessage" class="o_dw_map_notice">
                             <span class="fa fa-info-circle" aria-hidden="true"/>
                             <span t-esc="state.mapMessage"/>
+                            <a t-if="state.mapKeyMissing" href="/odoo/action-website.action_website_configuration">Open Website settings</a>
                         </div>
                         <div t-if="!locatedSites.length and !state.loading" class="o_dw_no_locations">
                             <span class="fa fa-map-marker"/>

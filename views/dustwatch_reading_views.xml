@@ -10,7 +10,7 @@
 <field name="name">dustwatch.reading.list</field>
 <field name="model">dustwatch.reading</field>
 <field name="arch" type="xml">
-<list editable="bottom">
+<list class="o_dustwatch_view" editable="bottom">
 <field name="currency_id" column_invisible="1"/>
 <field name="site_id"/>
 <field name="date"/>
@@ -30,7 +30,7 @@
 <field name="name">dustwatch.reading.form</field>
 <field name="model">dustwatch.reading</field>
 <field name="arch" type="xml">
-<form string="Daily Reading">
+<form string="Daily Reading" class="o_dustwatch_view">
 <sheet>
 <field name="currency_id" invisible="1"/>
 <group>
@@ -60,7 +60,7 @@
 <field name="name">dustwatch.reading.graph</field>
 <field name="model">dustwatch.reading</field>
 <field name="arch" type="xml">
-<graph type="line">
+<graph class="o_dustwatch_view" type="line">
 <field name="date" interval="day"/>
 <field name="site_id"/>
 <field name="actual_kwh" type="measure"/>
@@ -71,7 +71,7 @@
 <field name="name">dustwatch.reading.pivot</field>
 <field name="model">dustwatch.reading</field>
 <field name="arch" type="xml">
-<pivot>
+<pivot class="o_dustwatch_view">
 <field name="site_id" type="row"/>
 <field name="date" interval="month" type="col"/>
 <field name="actual_kwh" type="measure"/>

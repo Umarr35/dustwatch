@@ -8,7 +8,7 @@
     --dw-orange: #f97316;
     --dw-amber: #fbbf24;
     --dw-green: #22c55e;
-    min-height: calc(100vh - 92px);
+    min-height: 100%;
     padding: 28px clamp(16px, 2.5vw, 36px) 40px;
     color: var(--dw-white);
     background: var(--dw-black);
@@ -262,7 +262,7 @@
     }
 
     .o_dw_map_attribution { position: absolute; left: 12px; bottom: 10px; color: #71717a; font-size: 8px; font-weight: 750; letter-spacing: .13em; }
-    .o_dw_map_notice { position: absolute; top: 12px; left: 50%; display: flex; align-items: center; gap: 7px; max-width: 84%; padding: 7px 10px; border: 1px solid rgba(249,115,22,.22); border-radius: 8px; color: #fed7aa; background: rgba(9,9,11,.84); font-size: 10px; transform: translateX(-50%); }
+    .o_dw_map_notice { position: absolute; top: 12px; left: 50%; display: flex; align-items: center; gap: 7px; max-width: 84%; padding: 7px 10px; border: 1px solid rgba(249,115,22,.22); border-radius: 8px; color: #fed7aa; background: rgba(9,9,11,.84); font-size: 10px; transform: translateX(-50%); a { color: #fb923c; font-weight: 750; text-decoration: underline; white-space: nowrap; } }
     .o_dw_no_locations { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: #a1a1aa; text-align: center; background: rgba(9, 9, 11, .55); span.fa { color: var(--dw-orange); font-size: 25px; } strong { color: #fafafa; font-size: 14px; } span:last-child { max-width: 280px; font-size: 11px; } }
 
     .o_dw_map_footer {
@@ -326,7 +326,138 @@
     &:hover { border-color: #f97316; }
 }
 
-.o_web_client:has(.o_dustwatch_live_map) .o_main_navbar {
+.o_web_client:has(.o_dustwatch_view),
+.o_web_client:has(.o_dustwatch_live_map) {
+    color-scheme: dark;
+
+    .o_main_navbar {
+        border-bottom: 1px solid #27272a;
+        color: #fafafa;
+        background: #09090b;
+
+        a, button, .o_nav_entry, .dropdown-toggle { color: #e4e4e7; }
+        .o_nav_entry:hover, .dropdown-toggle:hover { color: #fff; background: #18181b; }
+        .o_nav_entry.active, .o_nav_entry[aria-current="page"] {
+            color: #fb923c;
+            box-shadow: inset 0 -2px #f97316;
+        }
+    }
+
+    .o_content { color: #f4f4f5; background: #09090b; }
+
+    .o_control_panel {
+        border-bottom: 1px solid #27272a;
+        color: #f4f4f5;
+        background: #111113;
+
+        .breadcrumb-item, .breadcrumb-item a, .o_cp_action_menus button { color: #e4e4e7; }
+        .o_searchview { border-color: #3f3f46; color: #fafafa; background: #09090b; }
+        .o_searchview_input, .o_searchview_facet { color: #fafafa; }
+    }
+
+    .btn-primary, .o_dustwatch_brand_btn {
+        border-color: #f97316 !important;
+        color: #111113 !important;
+        background: #f97316 !important;
+        &:hover, &:focus { border-color: #fb923c !important; background: #fb923c !important; }
+    }
+
+    .btn-secondary, .btn-light {
+        border-color: #3f3f46;
+        color: #f4f4f5;
+        background: #18181b;
+        &:hover { border-color: #f97316; color: #fff; background: #27272a; }
+    }
+
+    .o_list_view, .o_kanban_view, .o_form_view, .o_graph_view, .o_pivot {
+        color: #f4f4f5;
+        background: #09090b;
+    }
+
+    .o_list_renderer {
+        color: #f4f4f5;
+        background: #09090b;
+
+        .o_list_table {
+            --table-color: #f4f4f5;
+            --table-bg: #111113;
+            --table-border-color: #27272a;
+            color: #f4f4f5;
+            background: #111113;
+
+            thead th { color: #d4d4d8; background: #18181b; }
+            tbody tr { color: #f4f4f5; }
+            tbody tr:nth-child(even) { background: #141416; }
+            tbody tr:hover { background: #27272a; }
+            td, th { border-color: #27272a; }
+            a { color: #fb923c; }
+        }
+    }
+
+    .o_kanban_renderer {
+        color: #f4f4f5;
+        background: #09090b;
+
+        .o_kanban_group { background: #111113; }
+        .o_kanban_record, .oe_kanban_card {
+            border: 1px solid #27272a;
+            color: #f4f4f5;
+            background: #141416;
+            box-shadow: none;
+        }
+        a { color: #fb923c; }
+    }
+
+    .o_form_view {
+        .o_form_sheet_bg { background: #09090b; }
+        .o_form_sheet {
+            border: 1px solid #27272a;
+            color: #f4f4f5;
+            background: #111113;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .24);
+        }
+        .o_notebook .nav-link { color: #a1a1aa; }
+        .o_notebook .nav-link.active { border-bottom: 2px solid #f97316; color: #fb923c; background: transparent; }
+        .o_notebook .tab-content { color: #f4f4f5; }
+        .o_field_widget input:not([type="checkbox"]), .o_field_widget textarea, .o_field_widget select {
+            border-color: #3f3f46;
+            color: #fafafa;
+            background: #09090b;
+        }
+        .o_field_widget a { color: #fb923c; }
+        .oe_stat_button { border-color: #3f3f46; color: #f4f4f5; background: #18181b; }
+        .o_statusbar_status .o_arrow_button_current { color: #fb923c; }
+    }
+
+    .o_graph_view, .o_pivot {
+        color: #f4f4f5;
+        background: #111113;
+        .o_graph_title, .o_pivot_header_cell { color: #fafafa; }
+    }
+}
+
+// The map is a tall dashboard inside Odoo's fixed-height action manager.
+// Let this one action grow naturally and own vertical scrolling so the map,
+// KPIs, and service history can all be reached on desktop and mobile.
+.o_web_client .o_action:has(.o_dustwatch_live_map) {
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    > .o_content {
+        height: auto;
+        min-height: 100%;
+        overflow: visible;
+    }
+
+    .o_view_controller {
+        position: relative;
+        inset: auto;
+        height: auto;
+        min-height: 100%;
+    }
+}
+
+.o_web_client:has(.o_dustwatch_view) .o_main_navbar {
     border-bottom: 1px solid #27272a;
     background: #09090b;
 }

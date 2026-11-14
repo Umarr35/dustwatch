@@ -10,7 +10,7 @@
 <field name="name">dustwatch.cleaning.job.kanban</field>
 <field name="model">dustwatch.cleaning.job</field>
 <field name="arch" type="xml">
-<kanban default_group_by="state" create="0" quick_create="0" group_create="0" records_draggable="0" groups_draggable="0">
+<kanban class="o_dustwatch_view" default_group_by="state" create="0" quick_create="0" group_create="0" records_draggable="0" groups_draggable="0">
 <!--  Loaded for the conditions and money amounts of the card.  -->
 <field name="currency_id"/>
 <field name="state"/>
@@ -68,7 +68,7 @@ days
 <field name="model">dustwatch.cleaning.job</field>
 <field name="priority">10</field>
 <field name="arch" type="xml">
-<list create="0">
+<list class="o_dustwatch_view" create="0">
 <field name="currency_id" column_invisible="1"/>
 <field name="name"/>
 <field name="site_id"/>
@@ -89,7 +89,7 @@ days
 <field name="name">dustwatch.cleaning.job.form</field>
 <field name="model">dustwatch.cleaning.job</field>
 <field name="arch" type="xml">
-<form string="Cleaning Job" create="0" duplicate="0">
+<form string="Cleaning Job" class="o_dustwatch_view" create="0" duplicate="0">
 <header>
 <!--  FR-JOB-03: each button is shown only in the states
                          where its transition is allowed (WF-03 to WF-05).
@@ -213,7 +213,7 @@ days
 <field name="model">dustwatch.cleaning.job</field>
 <field name="priority">20</field>
 <field name="arch" type="xml">
-<list create="0">
+<list class="o_dustwatch_view" create="0">
 <!--  create="0": nothing can be created here.  -->
 <field name="currency_id" column_invisible="1"/>
 <field name="name"/>
@@ -237,7 +237,7 @@ days
 <field name="name">dustwatch.cleaning.job.pivot</field>
 <field name="model">dustwatch.cleaning.job</field>
 <field name="arch" type="xml">
-<pivot>
+<pivot class="o_dustwatch_view">
 <field name="partner_id" type="row"/>
 <field name="date_done" interval="month" type="col"/>
 <field name="cost" type="measure"/>
@@ -250,7 +250,7 @@ days
 <field name="name">dustwatch.cleaning.job.graph</field>
 <field name="model">dustwatch.cleaning.job</field>
 <field name="arch" type="xml">
-<graph type="bar">
+<graph class="o_dustwatch_view" type="bar">
 <field name="partner_id"/>
 <field name="date_done" interval="month"/>
 <field name="recovery_per_day" type="measure"/>

@@ -1,6 +1,6 @@
 # DustWatch
 
-DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. It calculates each site's loss from soiling, recommends cleaning when the money lost reaches the cleaning cost, lets an operations manager schedule work, and measures whether a completed clean paid off. Odoo CRM is the sales front end: opportunities use the customer contact, and **Live map** shows the same site records used by Fleet priority, Readings, and Cleaning jobs.
+DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. It calculates each site's loss from soiling, recommends cleaning when the money lost reaches the cleaning cost, lets an operations manager schedule work, and measures whether a completed clean paid off. Odoo CRM is the sales front end: opportunities use the customer contact, and the **DustWatch** app tab opens the map of the same site records used by Fleet priority, Readings, and Cleaning jobs.
 
 ## Install
 
@@ -14,7 +14,7 @@ DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. I
 
 1. Manage leads and opportunities in Odoo CRM; link them to the customer contact.
 2. Create the customer's solar site in DustWatch and enter its latitude and longitude. The CRM opportunity's **Live map** button opens the customer's map.
-3. Open **Live map** to view site status, click a node, and review that site's complete readings and cleaning-job history.
+3. Open **DustWatch** to view site status, click a node, and review that site's complete readings and cleaning-job history.
 4. Import readings with **Site**, **Date**, **Sun hours**, and **Actual output (kWh)**. The map refreshes from Odoo records every 15 seconds.
 5. Open Fleet priority to see the same sites ranked by urgency and daily loss.
 6. Review a recommendation, use **Clean now vs wait**, then accept or dismiss it.
