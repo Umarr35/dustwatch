@@ -197,7 +197,7 @@
                                 <strong>±<t t-esc="selectedCoverage.rangeKm"/> km</strong>
                             </div>
                             <div class="o_dw_coverage_summary_grid">
-                                <div><span>Nearby within 8 km</span><strong><t t-esc="selectedCoverage.nearbyCount"/></strong></div>
+                                <div><span>Sites incl. this one ≤8 km</span><strong><t t-esc="selectedCoverage.nearbyCount"/></strong></div>
                                 <div><span>Connected cluster</span><strong><t t-esc="selectedCoverage.siteCount"/> sites</strong></div>
                                 <div><span>Cluster radius</span><strong><t t-esc="selectedCoverage.clusterRadiusKm"/> km</strong></div>
                                 <div><span>Support indicator</span><strong><t t-esc="selectedCoverage.supportScore"/> / 100</strong></div>
