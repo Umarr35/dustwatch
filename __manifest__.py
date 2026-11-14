@@ -36,6 +36,7 @@ than waiting, and proves afterwards whether the clean paid off.
         'views/dustwatch_site_views.xml',
         'views/dustwatch_reading_views.xml',
         'views/dustwatch_cleaning_job_views.xml',
+        'views/dustwatch_weather_views.xml',
         'views/res_partner_views.xml',
         'views/crm_lead_views.xml',
         'views/dustwatch_live_map_views.xml',

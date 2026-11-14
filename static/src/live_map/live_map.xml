@@ -160,6 +160,28 @@
                             <div><span>Coordinates</span><strong><t t-esc="number(selectedSite.latitude, 4)"/>, <t t-esc="number(selectedSite.longitude, 4)"/></strong></div>
                         </div>
 
+                        <section class="o_dw_weather_panel" aria-label="Weather outlook">
+                            <div class="o_dw_weather_heading">
+                                <div>
+                                    <span class="o_dw_eyebrow">WEATHER / TOMORROW</span>
+                                    <h3 t-esc="state.weather?.weather_forecast_date || 'No forecast yet'"/>
+                                    <p t-esc="state.weather?.weather_conditions || (state.weatherLoading ? 'Loading forecast…' : 'Enable the weather provider in Configuration')"/>
+                                </div>
+                                <span t-att-class="`o_dw_weather_badge is-${state.weather?.weather_cleaning_advice || 'no_data'}`"
+                                      t-esc="selectionLabel(state.weather?.weather_cleaning_advice || 'no_data')"/>
+                            </div>
+                            <p class="o_dw_weather_reason" t-esc="state.weather?.weather_advice_reason || 'Weather does not change the financial cleaning trigger.'"/>
+                            <small class="o_dw_weather_source">Weather data: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo · CC BY 4.0</a></small>
+                            <div t-if="state.weather?.weather_forecast_date" class="o_dw_weather_grid">
+                                <div><span>Rain chance</span><strong><t t-esc="number(state.weather.weather_precipitation_probability, 0)"/>%</strong></div>
+                                <div><span>Rain amount</span><strong><t t-esc="number(state.weather.weather_precipitation_mm, 1)"/> mm</strong></div>
+                                <div><span>Max humidity</span><strong><t t-esc="number(state.weather.weather_humidity_max, 0)"/>%</strong></div>
+                                <div><span>Damp hours</span><strong t-esc="number(state.weather.weather_dew_risk_hours, 0)"/></div>
+                                <div><span>Peak-sun hours</span><strong t-esc="number(state.weather.weather_peak_sun_hours, 1)"/></div>
+                                <div><span>Planned output</span><strong t-esc="money(state.weather.weather_expected_kwh)"/></div>
+                            </div>
+                        </section>
+
                         <div class="o_dw_actions">
                             <button type="button" class="o_dw_button_primary" t-on-click="openSite">Open site record</button>
                             <button type="button" class="o_dw_button_secondary" t-on-click="openSimulator">Clean now vs wait</button>

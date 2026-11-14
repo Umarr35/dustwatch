@@ -15,5 +15,32 @@
 <field name="interval_type">days</field>
 <field name="active" eval="True"/>
 </record>
+<record id="ir_cron_dustwatch_weather_refresh" model="ir.cron">
+<field name="name">DustWatch: refresh weather forecasts</field>
+<field name="model_id" ref="model_dustwatch_weather_forecast"/>
+<field name="state">code</field>
+<field name="code">model._cron_refresh_weather()</field>
+<field name="interval_number">6</field>
+<field name="interval_type">hours</field>
+<field name="active" eval="True"/>
+</record>
+<record id="ir_cron_dustwatch_weather_signals" model="ir.cron">
+<field name="name">DustWatch: analyse anonymized weather signals</field>
+<field name="model_id" ref="model_dustwatch_weather_signal"/>
+<field name="state">code</field>
+<field name="code">model._cron_analyze_regional_signals()</field>
+<field name="interval_number">1</field>
+<field name="interval_type">days</field>
+<field name="active" eval="True"/>
+</record>
+<record id="ir_cron_dustwatch_weather_prune" model="ir.cron">
+<field name="name">DustWatch: prune old weather snapshots</field>
+<field name="model_id" ref="model_dustwatch_weather_forecast"/>
+<field name="state">code</field>
+<field name="code">model._cron_prune_weather_history()</field>
+<field name="interval_number">1</field>
+<field name="interval_type">weeks</field>
+<field name="active" eval="True"/>
+</record>
 </data>
 </odoo>

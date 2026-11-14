@@ -18,6 +18,9 @@
 <!--  The footer totals the three kWh columns and the money lost.  -->
 <field name="actual_kwh" sum="Total actual output"/>
 <field name="expected_kwh" sum="Total expected output"/>
+<field name="forecast_expected_kwh" sum="Total weather-planned output"/>
+<field name="forecast_variance_kwh" string="Actual vs weather (kWh)"/>
+<field name="forecast_error_pct" string="Weather variance (%)"/>
 <field name="lost_kwh" sum="Total lost to dust"/>
 <field name="loss_pct"/>
 <field name="lost_aed" sum="Total money lost"/>
@@ -47,6 +50,13 @@
 <field name="loss_pct"/>
 <field name="lost_aed"/>
 </group>
+<group string="Weather forecast comparison" name="weather_comparison">
+<field name="weather_forecast_id"/>
+<field name="forecast_sun_hours"/>
+<field name="forecast_expected_kwh"/>
+<field name="forecast_variance_kwh"/>
+<field name="forecast_error_pct"/>
+</group>
 </group>
 </sheet>
 </form>
@@ -64,6 +74,7 @@
 <field name="date" interval="day"/>
 <field name="site_id"/>
 <field name="actual_kwh" type="measure"/>
+<field name="forecast_expected_kwh" type="measure"/>
 </graph>
 </field>
 </record>
@@ -76,6 +87,8 @@
 <field name="date" interval="month" type="col"/>
 <field name="actual_kwh" type="measure"/>
 <field name="expected_kwh" type="measure"/>
+<field name="forecast_expected_kwh" type="measure"/>
+<field name="forecast_variance_kwh" type="measure"/>
 <field name="lost_kwh" type="measure"/>
 <field name="lost_aed" type="measure"/>
 </pivot>

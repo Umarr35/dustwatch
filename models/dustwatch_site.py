@@ -70,12 +70,17 @@ class DustwatchSite(models.Model):
     notes = fields.Text(string='Notes')
     latitude = fields.Float(string='Latitude', digits=(16, 6))
     longitude = fields.Float(string='Longitude', digits=(16, 6))
+    weather_last_fetch_at = fields.Datetime(string='Last weather refresh', readonly=True)
+    weather_last_error = fields.Char(string='Weather refresh status', readonly=True)
 
     # ------------------------------------------------------------------
     # Links
     # ------------------------------------------------------------------
     reading_ids = fields.One2many('dustwatch.reading', 'site_id', string='Readings')
     job_ids = fields.One2many('dustwatch.cleaning.job', 'site_id', string='Cleaning jobs')
+    weather_forecast_ids = fields.One2many(
+        'dustwatch.weather.forecast', 'site_id', string='Weather forecasts',
+    )
     # The site's job in state recommended or scheduled, otherwise empty.
     open_job_id = fields.Many2one(
         'dustwatch.cleaning.job', string='Open job',
@@ -91,6 +96,47 @@ class DustwatchSite(models.Model):
     # the buttons themselves show "Readings" and "Cleaning jobs".
     reading_count = fields.Integer(string='Number of readings', compute='_compute_counts')
     job_count = fields.Integer(string='Number of cleaning jobs', compute='_compute_counts')
+
+    # ------------------------------------------------------------------
+    # Next-day weather, exposed as an advisory to the cleaning decision
+    # ------------------------------------------------------------------
+    weather_next_forecast_id = fields.Many2one(
+        'dustwatch.weather.forecast', string='Next-day forecast',
+        compute='_compute_weather_summary',
+    )
+    weather_forecast_date = fields.Date(string='Forecast date', compute='_compute_weather_summary')
+    weather_conditions = fields.Char(string='Forecast conditions', compute='_compute_weather_summary')
+    weather_precipitation_mm = fields.Float(
+        string='Forecast rain (mm)', digits=(16, 2), compute='_compute_weather_summary',
+    )
+    weather_precipitation_probability = fields.Float(
+        string='Rain chance (%)', digits=(16, 1), compute='_compute_weather_summary',
+    )
+    weather_humidity_max = fields.Float(
+        string='Maximum humidity (%)', digits=(16, 1), compute='_compute_weather_summary',
+    )
+    weather_dew_risk_hours = fields.Float(
+        string='Damp / near-dewpoint hours', digits=(16, 1), compute='_compute_weather_summary',
+    )
+    weather_wind_speed_max = fields.Float(
+        string='Maximum wind (km/h)', digits=(16, 1), compute='_compute_weather_summary',
+    )
+    weather_peak_sun_hours = fields.Float(
+        string='Forecast peak-sun hours', digits=(16, 2), compute='_compute_weather_summary',
+    )
+    weather_expected_kwh = fields.Float(
+        string='Weather-based planned output (kWh)', digits=(16, 2),
+        compute='_compute_weather_summary',
+    )
+    weather_provider = fields.Char(string='Weather source', compute='_compute_weather_summary')
+    weather_cleaning_advice = fields.Selection([
+        ('no_data', 'No forecast'),
+        ('follow_financial_trigger', 'Follow financial trigger'),
+        ('review_after_rain', 'Review after forecast rain'),
+        ('clean_before_damp', 'Consider cleaning before damp weather'),
+        ('monitor_moisture', 'Monitor moisture risk'),
+    ], string='Weather cleaning advice', compute='_compute_weather_summary')
+    weather_advice_reason = fields.Text(string='Weather advice reason', compute='_compute_weather_summary')
 
     # ------------------------------------------------------------------
     # Dust metrics, stored and read-only: all set by _compute_dust_metrics
@@ -215,6 +261,71 @@ class DustwatchSite(models.Model):
         for site in self:
             site.reading_count = len(site.reading_ids)
             site.job_count = len(site.job_ids)
+
+    @api.depends(
+        'status', 'weather_forecast_ids.forecast_date', 'weather_forecast_ids.issued_at',
+        'weather_forecast_ids.weather_code', 'weather_forecast_ids.precipitation_mm',
+        'weather_forecast_ids.precipitation_probability', 'weather_forecast_ids.humidity_max',
+        'weather_forecast_ids.dew_risk_hours', 'weather_forecast_ids.wind_speed_max',
+        'weather_forecast_ids.peak_sun_hours', 'weather_forecast_ids.forecast_expected_kwh',
+        'weather_forecast_ids.provider',
+    )
+    def _compute_weather_summary(self):
+        """Expose the next forecast as an advisory, never an automatic job."""
+        forecast_date = fields.Date.context_today(self) + timedelta(days=1)
+        forecast_records = self.env['dustwatch.weather.forecast'].search([
+            ('site_id', 'in', self.ids),
+            ('forecast_date', '=', forecast_date),
+        ], order='issued_at desc, id desc')
+        latest_by_site = {}
+        for forecast_record in forecast_records:
+            latest_by_site.setdefault(forecast_record.site_id.id, forecast_record)
+
+        for site in self:
+            forecast = latest_by_site.get(site.id) or self.env['dustwatch.weather.forecast']
+
+            site.weather_next_forecast_id = forecast
+            site.weather_forecast_date = forecast.forecast_date if forecast else False
+            site.weather_conditions = forecast.weather_description if forecast else False
+            site.weather_precipitation_mm = forecast.precipitation_mm if forecast else 0.0
+            site.weather_precipitation_probability = forecast.precipitation_probability if forecast else 0.0
+            site.weather_humidity_max = forecast.humidity_max if forecast else 0.0
+            site.weather_dew_risk_hours = forecast.dew_risk_hours if forecast else 0.0
+            site.weather_wind_speed_max = forecast.wind_speed_max if forecast else 0.0
+            site.weather_peak_sun_hours = forecast.peak_sun_hours if forecast else 0.0
+            site.weather_expected_kwh = forecast.forecast_expected_kwh if forecast else 0.0
+            site.weather_provider = forecast.provider if forecast else False
+
+            if not forecast:
+                site.weather_cleaning_advice = 'no_data'
+                site.weather_advice_reason = _(
+                    'Enable weather forecasts in DustWatch configuration to see a site-specific outlook.'
+                )
+            elif (
+                site.status in ('red', 'amber')
+                and forecast.precipitation_probability >= 70.0
+                and forecast.precipitation_mm >= 4.0
+            ):
+                site.weather_cleaning_advice = 'review_after_rain'
+                site.weather_advice_reason = _(
+                    'At least %(rain)s mm of rain is forecast with a 70%% or higher probability. Review crew timing and inspect after the rain; rain is not assumed to clean panels.',
+                    rain='%.1f' % forecast.precipitation_mm,
+                )
+            elif site.status in ('red', 'amber') and forecast.dew_risk_hours >= 3.0:
+                site.weather_cleaning_advice = 'clean_before_damp'
+                site.weather_advice_reason = _(
+                    'Several humid or near-dewpoint hours are forecast. If cleaning is already economically due, consider scheduling before the damp period; humidity alone does not trigger a clean.'
+                )
+            elif forecast.dew_risk_hours >= 3.0:
+                site.weather_cleaning_advice = 'monitor_moisture'
+                site.weather_advice_reason = _(
+                    'Damp-weather risk is elevated. Monitor the site; keep the existing loss-to-clean-cost trigger as the cleaning decision.'
+                )
+            else:
+                site.weather_cleaning_advice = 'follow_financial_trigger'
+                site.weather_advice_reason = _(
+                    'The forecast does not materially change the current loss-to-clean-cost recommendation.'
+                )
 
     # ==================================================================
     # Calculations (specification section 5.2)
@@ -549,6 +660,29 @@ class DustwatchSite(models.Model):
         self._check_manager_rights()
         self._run_evaluation()
         return True
+
+    def action_refresh_weather(self):
+        """Refresh this site's forecast on a manager request."""
+        self.ensure_one()
+        self._check_manager_rights()
+        stats = self.env['dustwatch.weather.forecast'].sudo()._refresh_sites(self)
+        if stats.get('disabled'):
+            message = _('Enable a weather provider in DustWatch / Configuration / Weather settings first.')
+        else:
+            message = _(
+                'Weather refresh complete: %(rows)s daily forecast snapshots saved.',
+                rows=stats.get('forecast_rows', 0),
+            )
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('DustWatch weather'),
+                'message': message,
+                'type': 'warning' if stats.get('failures') or stats.get('disabled') else 'success',
+                'sticky': bool(stats.get('failures')),
+            },
+        }
 
     def action_open_simulator(self):
         """"Clean now vs wait" (FR-SIM-01): open the simulator dialog."""

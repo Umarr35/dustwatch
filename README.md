@@ -8,7 +8,8 @@ DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. I
 2. Create a UAE company so AED is the company currency.
 3. Update the Apps list and install **DustWatch**. CRM and Website install as dependencies.
 4. Give operations staff the **DustWatch / Manager** role and field staff the **DustWatch / Crew** role.
-5. For a street map, enter a Google Maps API key in **Website → Configuration → Settings**. Without a key, the live coordinate map remains available.
+5. For a street map, enter a Google Maps API key in **Website → Edit → Theme → Advanced → Google Map → Custom Key**. Without a key, the live coordinate map remains available.
+6. To enable weather forecasts, open **DustWatch → Configuration → Weather settings**. Weather starts disabled so no solar-site coordinates are sent to a provider until a manager enables it.
 
 ## Daily operation
 
@@ -20,6 +21,14 @@ DustWatch is an Odoo 19 Community add-on for solar maintenance teams in Dubai. I
 6. Review a recommendation, use **Clean now vs wait**, then accept or dismiss it.
 7. Assign a crew and mark the scheduled job done.
 8. After three readings, open the job to view recovery and payback.
+
+## Weather outlook
+
+After weather is enabled and its first refresh completes, the site form and live map show next-day rain, humidity / dew risk, wind, peak-sun-hours, and planned output. Weather is an advisory: it never creates or cancels cleaning work. A reading is matched to the latest forecast captured before that Dubai day began, so actual output can be compared with the weather-based output plan.
+
+Cross-customer regional signals are a separate opt-in. When enabled, DustWatch looks for a large same-day output shortfall across at least three sites and two customers in a coarse region. It stores only aggregate counts and weather context, not site or customer names. Signals are experimental anomaly indicators, not official dust-storm warnings.
+
+The public Open-Meteo endpoint is suitable only for non-commercial evaluation. For a commercial DustWatch service, choose the commercial provider mode and configure its API key. Open-Meteo attribution appears with the forecast data.
 
 The module includes three Dubai-style sample sites with historic readings and cleaning jobs for a first-run walkthrough.
 

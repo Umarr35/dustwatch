@@ -19,8 +19,11 @@
 <menuitem id="menu_dustwatch_cleaning_jobs" name="Cleaning jobs" parent="menu_dustwatch_root" action="action_dustwatch_cleaning_job" sequence="20"/>
 <menuitem id="menu_dustwatch_readings" name="Readings" parent="menu_dustwatch_root" action="action_dustwatch_reading" sequence="30"/>
 <menuitem id="menu_dustwatch_reporting" name="Reporting" parent="menu_dustwatch_root" sequence="40"/>
+<menuitem id="menu_dustwatch_weather" name="Weather outlook" parent="menu_dustwatch_reporting" action="action_dustwatch_weather_forecast" groups="dustwatch.group_dustwatch_crew" sequence="20"/>
+<menuitem id="menu_dustwatch_weather_signals" name="Regional weather signals" parent="menu_dustwatch_reporting" action="action_dustwatch_weather_signal" groups="dustwatch.group_dustwatch_manager" sequence="30"/>
 <menuitem id="menu_dustwatch_cleaning_results" name="Cleaning results" parent="menu_dustwatch_reporting" action="action_dustwatch_cleaning_results" sequence="10"/>
 <!--  SEC-05: the Configuration menu is for managers only.  -->
 <menuitem id="menu_dustwatch_configuration" name="Configuration" parent="menu_dustwatch_root" groups="dustwatch.group_dustwatch_manager" sequence="90"/>
 <menuitem id="menu_dustwatch_sites" name="Sites" parent="menu_dustwatch_configuration" action="action_dustwatch_site_config" sequence="10"/>
+<menuitem id="menu_dustwatch_weather_settings" name="Weather settings" parent="menu_dustwatch_configuration" action="action_dustwatch_weather_settings" groups="dustwatch.group_dustwatch_manager" sequence="20"/>
 </odoo>

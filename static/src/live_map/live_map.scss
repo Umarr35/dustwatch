@@ -285,6 +285,13 @@
     .o_dw_site_metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; padding: 14px 18px; div { padding: 10px; border: 1px solid var(--dw-border); border-radius: 9px; background: #0d0d0f; } span { display: block; color: #a1a1aa; font-size: 9px; } strong { display: block; margin-top: 5px; color: #fff; font-size: 13px; font-weight: 750; } div:nth-child(2) strong { color: var(--dw-orange); } }
     .o_dw_site_specs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 3px 20px 15px; div { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding-bottom: 7px; border-bottom: 1px solid #27272a; } span { color: #71717a; font-size: 9px; } strong { color: #e4e4e7; font-size: 9px; text-align: right; } }
 
+    .o_dw_weather_panel { margin: 0 18px 15px; padding: 13px; border: 1px solid #3f3f46; border-radius: 11px; background: #0d0d0f; }
+    .o_dw_weather_heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; h3 { margin-top: 4px; color: #fafafa; font-size: 12px; font-weight: 700; } p { margin-top: 3px; color: #a1a1aa; font-size: 9px; } }
+    .o_dw_weather_badge { flex: 0 0 auto; max-width: 130px; padding: 5px 7px; border: 1px solid #3f3f46; border-radius: 999px; color: #d4d4d8; background: #18181b; font-size: 8px; font-weight: 750; text-align: center; &.is-review_after_rain, &.is-clean_before_damp { border-color: rgba(245,158,11,.4); color: #fcd34d; background: rgba(120,53,15,.22); } &.is-monitor_moisture { border-color: rgba(251,191,36,.3); color: #fde68a; } &.is-follow_financial_trigger { color: #86efac; border-color: rgba(34,197,94,.3); } }
+    .o_dw_weather_reason { margin: 8px 0 10px !important; color: #a1a1aa; font-size: 9px; line-height: 1.45; }
+    .o_dw_weather_source { display: block; margin-bottom: 8px; color: #71717a; font-size: 8px; a { color: #fbbf24; text-decoration: underline; } }
+    .o_dw_weather_grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; div { min-width: 0; padding: 7px; border: 1px solid #27272a; border-radius: 7px; background: #111113; } span { display: block; color: #71717a; font-size: 8px; } strong { display: block; margin-top: 4px; color: #f4f4f5; font-size: 10px; } }
+
     .o_dw_actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 0 18px 16px; }
     .o_dw_button_primary, .o_dw_button_secondary { min-height: 34px; padding: 7px 9px; border-radius: 8px; font-size: 10px; font-weight: 750; transition: filter 120ms ease, border-color 120ms ease; }
     .o_dw_button_primary { border: 1px solid #f59e0b; color: #111113; background: #f59e0b; &:hover { border-color: #fbbf24; background: #fbbf24; } }
@@ -468,6 +475,19 @@
         color: #f4f4f5;
         background: #111113;
         .o_graph_title, .o_pivot_header_cell { color: #fafafa; }
+    }
+
+    .o_dw_weather_notice {
+        margin: 0 0 14px;
+        padding: 11px 13px;
+        border: 1px solid #3f3f46;
+        border-radius: 9px;
+        color: #d4d4d8;
+        background: #18181b;
+        font-size: 12px;
+        line-height: 1.5;
+        a { color: #fbbf24; text-decoration: underline; }
+        &.is-warning { border-color: rgba(245, 158, 11, .35); color: #fde68a; background: rgba(120, 53, 15, .16); }
     }
 }
 

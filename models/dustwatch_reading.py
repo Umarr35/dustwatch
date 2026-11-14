@@ -3,6 +3,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 from . import constants as const
+from .weather_utils import dubai_day_start_utc
 
 
 class DustwatchReading(models.Model):
@@ -29,6 +30,10 @@ class DustwatchReading(models.Model):
     actual_kwh = fields.Float(
         string='Actual output (kWh)', digits=(16, const.KWH_DIGITS), required=True,
     )
+    weather_forecast_id = fields.Many2one(
+        'dustwatch.weather.forecast', string='Weather forecast used',
+        readonly=True, copy=False, index=True, ondelete='set null',
+    )
 
     # ------------------------------------------------------------------
     # Calculated values, stored and read-only (FR-READ-02)
@@ -48,6 +53,23 @@ class DustwatchReading(models.Model):
     )
     lost_aed = fields.Monetary(
         string='Money lost', compute='_compute_loss', store=True,
+    )
+    forecast_sun_hours = fields.Float(
+        string='Forecast peak-sun hours', related='weather_forecast_id.peak_sun_hours',
+        store=True, readonly=True, digits=(16, const.KWH_DIGITS),
+    )
+    forecast_expected_kwh = fields.Float(
+        string='Weather-based planned output (kWh)',
+        related='weather_forecast_id.forecast_expected_kwh', store=True, readonly=True,
+        digits=(16, const.KWH_DIGITS),
+    )
+    forecast_variance_kwh = fields.Float(
+        string='Actual vs weather plan (kWh)', digits=(16, const.KWH_DIGITS),
+        compute='_compute_weather_comparison', store=True,
+    )
+    forecast_error_pct = fields.Float(
+        string='Weather forecast variance (%)', digits=(16, const.PCT_DIGITS),
+        compute='_compute_weather_comparison', store=True, aggregator='avg',
     )
 
     # ------------------------------------------------------------------
@@ -110,6 +132,52 @@ class DustwatchReading(models.Model):
             reading.loss_pct = values['loss_pct']
             reading.lost_aed = values['lost_aed']
 
+    @api.depends('actual_kwh', 'forecast_expected_kwh')
+    def _compute_weather_comparison(self):
+        for reading in self:
+            planned = reading.forecast_expected_kwh
+            reading.forecast_variance_kwh = reading.actual_kwh - planned if reading.weather_forecast_id else 0.0
+            reading.forecast_error_pct = (
+                (reading.actual_kwh - planned) / planned * 100.0
+                if reading.weather_forecast_id and planned > 0 else 0.0
+            )
+
+    def _attach_weather_forecasts(self):
+        """Attach the latest forecast that existed before each Dubai day began.
+
+        Keeping the issue time before the day prevents an in-day updated or
+        post-event forecast from being mislabelled as a day-ahead prediction.
+        """
+        readings = self.filtered(lambda reading: reading.site_id and reading.date)
+        if not readings:
+            return True
+        dates = set(readings.mapped('date'))
+        cutoffs = {day: dubai_day_start_utc(day) for day in dates}
+        forecasts = self.env['dustwatch.weather.forecast'].sudo().search([
+            ('site_id', 'in', readings.mapped('site_id').ids),
+            ('forecast_date', 'in', list(dates)),
+            ('issued_at', '<=', max(cutoffs.values())),
+        ], order='issued_at desc, id desc')
+        latest_by_site_day = {}
+        for forecast in forecasts:
+            key = (forecast.site_id.id, forecast.forecast_date)
+            if forecast.issued_at <= cutoffs[forecast.forecast_date] and key not in latest_by_site_day:
+                latest_by_site_day[key] = forecast
+        for reading in readings:
+            forecast = latest_by_site_day.get((reading.site_id.id, reading.date))
+            if forecast and reading.weather_forecast_id != forecast:
+                reading.sudo().write({'weather_forecast_id': forecast.id})
+        return True
+
+    @api.constrains('site_id', 'date', 'weather_forecast_id')
+    def _check_weather_forecast_matches_reading(self):
+        for reading in self.filtered('weather_forecast_id'):
+            forecast = reading.weather_forecast_id
+            if forecast.site_id != reading.site_id or forecast.forecast_date != reading.date:
+                raise ValidationError(_(
+                    'The linked weather forecast must belong to the same site and date as the reading.'
+                ))
+
     # DM-R-01: the display name is the site name and the date.
     @api.depends('site_id.name', 'date')
     def _compute_display_name(self):
@@ -147,5 +215,14 @@ class DustwatchReading(models.Model):
         recommendation can appear straight after an import.
         """
         readings = super().create(vals_list)
+        readings._attach_weather_forecasts()
         readings.site_id._run_evaluation()
         return readings
+
+    def write(self, vals):
+        changed_location_or_date = bool({'site_id', 'date'} & vals.keys())
+        result = super().write(vals)
+        if changed_location_or_date:
+            self.sudo().write({'weather_forecast_id': False})
+            self._attach_weather_forecasts()
+        return result

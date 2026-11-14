@@ -1,5 +1,14 @@
 # Change log
 
+## Weather forecast update - 2026-11-14
+
+- Added opt-in Open-Meteo forecasts for Dubai rain, humidity / dew risk, wind, weather codes, and solar radiation.
+- Added low-priority cleaning timing advice that never auto-books or cancels a job and leaves the financial trigger authoritative.
+- Added day-ahead peak-sun-hour and output plans, linked readings to the forecast available before the Dubai day, and exposed actual-versus-plan variance.
+- Added an opt-in anonymized cross-customer regional anomaly signal requiring at least three sites and two customers; no customer/site identifiers are stored in signal rows.
+- Added manager-only provider settings, commercial endpoint support, six-hour refresh, daily signal analysis, and forecast-history cleanup.
+- Verified Odoo module loading and weather-disabled startup; no external forecast requests are made until a manager enables the provider.
+
 ## DustWatch contrast and navbar update - 2026-11-14
 
 - Reworked Odoo navbar colors to use the Tipsy Taxi zinc-black and amber palette instead of Odoo's purple brand color.

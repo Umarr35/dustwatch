@@ -107,6 +107,7 @@ days
                          three buttons for managers only.  -->
 <button name="action_open_simulator" type="object" string="Clean now vs wait" class="btn-primary" invisible="not id"/>
 <button name="action_open_live_map" type="object" string="Show on live map" class="o_dustwatch_brand_btn" invisible="not id"/>
+<button name="action_refresh_weather" type="object" string="Refresh weather" class="btn-secondary" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
 <button name="action_request_clean" type="object" string="Request clean" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
 <button name="action_evaluate_now" type="object" string="Evaluate now" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
 <!--  Only when the site is flagged (WF-07).  -->
@@ -178,6 +179,46 @@ A clean is recommended for this site.
 <page string="Output chart" name="output_chart">
 <widget name="dustwatch_output_chart"/>
 </page>
+<page string="Weather outlook" name="weather">
+<div class="o_dw_weather_notice" role="note">
+Weather is an advisory. It can suggest reviewing the timing of a clean, but it never creates or cancels a job. A rain forecast is not treated as a panel wash.
+</div>
+<group>
+<group string="Next-day conditions" name="weather_conditions">
+<field name="weather_forecast_date"/>
+<field name="weather_conditions"/>
+<field name="weather_precipitation_mm"/>
+<field name="weather_precipitation_probability"/>
+<field name="weather_humidity_max"/>
+<field name="weather_dew_risk_hours"/>
+<field name="weather_wind_speed_max"/>
+</group>
+<group string="Planned solar output" name="weather_output">
+<field name="weather_peak_sun_hours"/>
+<field name="weather_expected_kwh"/>
+<field name="weather_provider"/>
+<field name="weather_last_fetch_at"/>
+<field name="weather_last_error"/>
+<field name="weather_cleaning_advice" widget="badge" decoration-warning="weather_cleaning_advice in ('review_after_rain', 'clean_before_damp', 'monitor_moisture')" decoration-success="weather_cleaning_advice == 'follow_financial_trigger'"/>
+<field name="weather_advice_reason" nolabel="1"/>
+</group>
+</group>
+<separator string="Forecast history and planned output"/>
+<field name="weather_forecast_ids" readonly="1" nolabel="1">
+<list create="0" edit="0" delete="0" default_order="forecast_date asc, issued_at desc">
+<field name="forecast_date"/>
+<field name="issued_at"/>
+<field name="weather_description"/>
+<field name="peak_sun_hours"/>
+<field name="forecast_expected_kwh"/>
+<field name="precipitation_mm"/>
+<field name="precipitation_probability"/>
+<field name="humidity_max"/>
+<field name="dew_risk_hours"/>
+<field name="wind_speed_max"/>
+</list>
+</field>
+</page>
 <page string="Readings" name="readings">
 <!--  Read-only list, newest first (the model's order).  -->
 <field name="reading_ids" readonly="1" nolabel="1">
@@ -187,6 +228,8 @@ A clean is recommended for this site.
 <field name="sun_hours"/>
 <field name="actual_kwh" string="Actual output"/>
 <field name="expected_kwh" string="Expected output"/>
+<field name="forecast_expected_kwh" string="Weather plan"/>
+<field name="forecast_variance_kwh" string="Actual vs weather"/>
 <field name="lost_kwh" string="Lost to dust"/>
 <field name="loss_pct"/>
 <field name="lost_aed"/>

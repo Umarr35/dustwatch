@@ -6,7 +6,14 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
 const REFRESH_MS = 15000;
+const WEATHER_REFRESH_MS = 5 * 60 * 1000;
 const DUBAI_CENTER = { lat: 25.2048, lng: 55.2708 };
+const SITE_WEATHER_FIELDS = [
+    "weather_forecast_date", "weather_conditions", "weather_precipitation_mm",
+    "weather_precipitation_probability", "weather_humidity_max", "weather_dew_risk_hours",
+    "weather_wind_speed_max", "weather_peak_sun_hours", "weather_expected_kwh",
+    "weather_provider", "weather_cleaning_advice", "weather_advice_reason",
+];
 const SITE_FIELDS = [
     "name", "active", "partner_id", "status", "fault_suspected", "capacity_kwp",
     "latitude", "longitude", "currency_id", "cleaning_cost", "price_per_kwh",
@@ -81,6 +88,8 @@ export class DustwatchLiveMap extends Component {
         this.state = useState({
             sites: [],
             selectedId: false,
+            weather: false,
+            weatherLoading: false,
             history: [],
             historyTab: "all",
             query: "",
@@ -99,6 +108,8 @@ export class DustwatchLiveMap extends Component {
         this.markers = new Map();
         this.didFitBounds = false;
         this.refreshTimer = null;
+        this.weatherSiteId = false;
+        this.weatherFetchedAt = 0;
 
         onWillStart(async () => {
             await this.refreshSites();
@@ -169,6 +180,7 @@ export class DustwatchLiveMap extends Component {
             this.state.live = true;
             this.state.lastUpdated = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
+            const previousSelectedId = this.state.selectedId;
             const preferredId = Number(this.actionContext.dustwatch_site_id || this.state.selectedId || 0);
             const initialSite = sites.find((site) => site.id === preferredId) || sites[0];
             if (initialSite && !this.state.selectedId) {
@@ -178,7 +190,16 @@ export class DustwatchLiveMap extends Component {
                 this.state.selectedId = initialSite?.id || false;
             }
             this.syncGoogleMarkers();
-            if (this.state.selectedId) await this.loadHistory(this.state.selectedId);
+            if (this.state.selectedId) {
+                if (
+                    previousSelectedId !== this.state.selectedId
+                    || this.weatherSiteId !== this.state.selectedId
+                    || Date.now() - this.weatherFetchedAt > WEATHER_REFRESH_MS
+                ) {
+                    await this.loadWeather(this.state.selectedId);
+                }
+                await this.loadHistory(this.state.selectedId);
+            }
         } catch (error) {
             console.error("DustWatch: live fleet refresh failed", error);
             this.state.error = "The live fleet could not be refreshed. Check your DustWatch access and retry.";
@@ -226,6 +247,28 @@ export class DustwatchLiveMap extends Component {
             this.state.history = [];
         } finally {
             this.state.historyLoading = false;
+        }
+    }
+
+    async loadWeather(siteId) {
+        if (!siteId) {
+            this.state.weather = false;
+            this.weatherSiteId = false;
+            return;
+        }
+        this.state.weatherLoading = true;
+        try {
+            const [weather] = await this.orm.read("dustwatch.site", [siteId], SITE_WEATHER_FIELDS);
+            if (this.state.selectedId === siteId) {
+                this.state.weather = weather || false;
+                this.weatherSiteId = siteId;
+                this.weatherFetchedAt = Date.now();
+            }
+        } catch (error) {
+            console.warn("DustWatch: site weather summary could not be loaded", error);
+            if (this.state.selectedId === siteId) this.state.weather = false;
+        } finally {
+            this.state.weatherLoading = false;
         }
     }
 
@@ -312,8 +355,13 @@ export class DustwatchLiveMap extends Component {
     async selectSite(siteId) {
         this.state.selectedId = siteId || false;
         this.syncGoogleMarkers();
-        if (siteId) await this.loadHistory(siteId);
-        else this.state.history = [];
+        if (siteId) {
+            await Promise.all([this.loadHistory(siteId), this.loadWeather(siteId)]);
+        } else {
+            this.state.history = [];
+            this.state.weather = false;
+            this.weatherSiteId = false;
+        }
     }
 
     setFilter(status) {

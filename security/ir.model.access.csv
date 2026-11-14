@@ -7,3 +7,6 @@ access_dustwatch_cleaning_job_crew,dustwatch.cleaning.job.crew,model_dustwatch_c
 access_dustwatch_cleaning_job_manager,dustwatch.cleaning.job.manager,model_dustwatch_cleaning_job,group_dustwatch_manager,1,1,1,1
 access_dustwatch_simulator_crew,dustwatch.simulator.crew,model_dustwatch_simulator,group_dustwatch_crew,1,1,1,1
 access_dustwatch_simulator_manager,dustwatch.simulator.manager,model_dustwatch_simulator,group_dustwatch_manager,1,1,1,1
+access_dustwatch_weather_forecast_crew,dustwatch.weather.forecast.crew,model_dustwatch_weather_forecast,group_dustwatch_crew,1,0,0,0
+access_dustwatch_weather_settings_manager,dustwatch.weather.settings.manager,model_dustwatch_weather_settings,group_dustwatch_manager,1,1,1,1
+access_dustwatch_weather_signal_manager,dustwatch.weather.signal.manager,model_dustwatch_weather_signal,group_dustwatch_manager,1,0,0,0
