@@ -1,5 +1,5 @@
 <odoo>
-<!-- 
+<!--
         SEC-01: two user groups under an application category "DustWatch".
 
         Odoo 19 uses three levels: category > privilege > group. The

@@ -68,6 +68,8 @@ class DustwatchSite(models.Model):
     # Set by the fault check (CAL-16), cleared by "Mark inspected" (WF-07).
     fault_suspected = fields.Boolean(string='Inspection needed', default=False)
     notes = fields.Text(string='Notes')
+    latitude = fields.Float(string='Latitude', digits=(16, 6))
+    longitude = fields.Float(string='Longitude', digits=(16, 6))
 
     # ------------------------------------------------------------------
     # Links
@@ -158,6 +160,25 @@ class DustwatchSite(models.Model):
         return '%d %s %d' % (value.day, _MONTH_ABBR[value.month - 1], value.year)
 
     @api.model
+    def _backfill_sample_coordinates(self):
+        """Give the existing demo rooftops locations when upgrading old DBs.
+
+        The sample site records are noupdate data. Backfill only records that
+        still have no coordinates so a manager's later location edits remain
+        intact across module upgrades.
+        """
+        locations = {
+            'site_al_noor': (25.2048, 55.2708),
+            'site_jebel_ali': (24.9857, 55.0273),
+            'site_greenfield': (25.1174, 55.2438),
+        }
+        for xml_id, (latitude, longitude) in locations.items():
+            site = self.env.ref('dustwatch.%s' % xml_id, raise_if_not_found=False)
+            if site and not site.latitude and not site.longitude:
+                site.write({'latitude': latitude, 'longitude': longitude})
+        return True
+
+    @api.model
     def _check_manager_rights(self):
         """Refuse the action unless the user is a DustWatch manager.
 
@@ -198,6 +219,16 @@ class DustwatchSite(models.Model):
     # ==================================================================
     # Calculations (specification section 5.2)
     # ==================================================================
+    @api.constrains('latitude', 'longitude')
+    def _check_coordinates(self):
+        for site in self:
+            if not -90 <= site.latitude <= 90:
+                raise ValidationError(_('Latitude must be between -90 and 90.'))
+            if not -180 <= site.longitude <= 180:
+                raise ValidationError(_('Longitude must be between -180 and 180.'))
+            if bool(site.latitude) != bool(site.longitude):
+                raise ValidationError(_('Enter both latitude and longitude, or leave both blank.'))
+
     def _cycle_figures(self):
         """CAL-05 to CAL-10 for one site, as unrounded numbers (CAL-18).
 
@@ -530,6 +561,16 @@ class DustwatchSite(models.Model):
             'target': 'new',
             'context': {'default_site_id': self.id},
         }
+
+    def action_open_live_map(self):
+        """Open this site's node on the live fleet map."""
+        self.ensure_one()
+        action = self.env.ref('dustwatch.action_dustwatch_live_map').read()[0]
+        action['context'] = {
+            'dustwatch_partner_id': self.partner_id.commercial_partner_id.id,
+            'dustwatch_site_id': self.id,
+        }
+        return action
 
     def action_request_clean(self):
         """"Request clean" (WF-02, FR-REC-09): a manager books a clean.

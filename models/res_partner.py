@@ -35,3 +35,11 @@ class ResPartner(models.Model):
             'domain': [('partner_id', '=', self.id)],
             'context': {'default_partner_id': self.id},
         }
+
+    def action_view_dustwatch_map(self):
+        """Open this customer's sites in the live map."""
+        self.ensure_one()
+        partner = self.commercial_partner_id
+        action = self.env.ref('dustwatch.action_dustwatch_live_map').read()[0]
+        action['context'] = {'dustwatch_partner_id': partner.id}
+        return action

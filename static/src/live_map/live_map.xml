@@ -1,0 +1,211 @@
+<templates xml:space="preserve">
+    <t t-name="dustwatch.LiveMap">
+        <main class="o_dustwatch_live_map">
+            <header class="o_dw_header">
+                <div>
+                    <div class="o_dw_eyebrow">DUSTWATCH / DUBAI OPERATIONS</div>
+                    <h1>Live solar fleet</h1>
+                    <p>One map for site health, cleaning decisions, and the complete service log.</p>
+                </div>
+                <div class="o_dw_live_state">
+                    <span t-att-class="state.live ? 'o_dw_live_dot is-live' : 'o_dw_live_dot'"/>
+                    <div>
+                        <strong t-esc="state.live ? 'LIVE' : 'CONNECTING'"/>
+                        <small>Synced <t t-esc="state.lastUpdated"/> · refreshes every 15 seconds</small>
+                    </div>
+                </div>
+            </header>
+
+            <div t-if="state.error" class="o_dw_error" role="alert">
+                <span class="fa fa-exclamation-triangle"/>
+                <span t-esc="state.error"/>
+                <button type="button" t-on-click="refreshSites">Retry</button>
+            </div>
+
+            <section class="o_dw_kpis" aria-label="Fleet summary">
+                <button type="button" class="o_dw_kpi" t-on-click="() => this.setFilter('all')">
+                    <span class="o_dw_kpi_label">ACTIVE SITES</span>
+                    <strong t-esc="stats.total"/>
+                    <small>Across the Dubai fleet</small>
+                </button>
+                <button type="button" class="o_dw_kpi is-orange" t-on-click="() => this.setFilter('red')">
+                    <span class="o_dw_kpi_label">CLEAN DUE</span>
+                    <strong t-esc="stats.due"/>
+                    <small>Loss has reached clean cost</small>
+                </button>
+                <button type="button" class="o_dw_kpi is-amber" t-on-click="() => this.setFilter('amber')">
+                    <span class="o_dw_kpi_label">APPROACHING</span>
+                    <strong t-esc="stats.approaching"/>
+                    <small>Review the next service window</small>
+                </button>
+                <button type="button" class="o_dw_kpi">
+                    <span class="o_dw_kpi_label">LOSING PER DAY</span>
+                    <strong t-esc="money(stats.dailyLoss)"/>
+                    <small>Estimated across active sites</small>
+                </button>
+                <button type="button" class="o_dw_kpi is-white" t-on-click="() => this.setFilter('red')">
+                    <span class="o_dw_kpi_label">INSPECTION FLAGS</span>
+                    <strong t-esc="stats.inspect"/>
+                    <small>Check for faults after cleaning</small>
+                </button>
+            </section>
+
+            <nav class="o_dw_shortcuts" aria-label="DustWatch menus">
+                <span class="o_dw_shortcuts_label">OPEN IN DUSTWATCH</span>
+                <button type="button" class="is-current" t-on-click="openFleet">Fleet priority</button>
+                <button type="button" t-on-click="openCleaningJobs">Cleaning jobs</button>
+                <button type="button" t-on-click="openAllReadings">Readings</button>
+            </nav>
+
+            <section class="o_dw_workspace">
+                <div class="o_dw_map_panel">
+                    <div class="o_dw_map_toolbar">
+                        <div>
+                            <span class="o_dw_eyebrow">SITE LOCATIONS</span>
+                            <h2>Dubai service area</h2>
+                        </div>
+                        <label class="o_dw_search">
+                            <span class="fa fa-search" aria-hidden="true"/>
+                            <input type="search" placeholder="Search sites or customers" t-model="state.query" t-on-input="syncGoogleMarkers"/>
+                            <kbd>⌘ K</kbd>
+                        </label>
+                    </div>
+                    <div class="o_dw_map_filters">
+                        <button type="button" t-att-class="state.statusFilter === 'all' ? 'is-active' : ''" t-on-click="() => this.setFilter('all')">All <span t-esc="stats.total"/></button>
+                        <button type="button" t-att-class="state.statusFilter === 'red' ? 'is-active' : ''" t-on-click="() => this.setFilter('red')"><i class="o_dw_legend_dot is-red"/>Clean due</button>
+                        <button type="button" t-att-class="state.statusFilter === 'amber' ? 'is-active' : ''" t-on-click="() => this.setFilter('amber')"><i class="o_dw_legend_dot is-amber"/>Approaching</button>
+                        <button type="button" t-att-class="state.statusFilter === 'green' ? 'is-active' : ''" t-on-click="() => this.setFilter('green')"><i class="o_dw_legend_dot is-green"/>On track</button>
+                    </div>
+
+                    <div class="o_dw_map_stage">
+                        <div t-ref="googleMap" t-att-class="state.mapMode === 'google' ? 'o_dw_google_map' : 'o_dw_google_map o_dw_hidden'"/>
+                        <div t-if="state.mapMode === 'canvas'" class="o_dw_coordinate_map">
+                            <div class="o_dw_coordinate_surface" t-att-style="`transform: scale(${state.zoom})`">
+                                <div class="o_dw_map_grid"/>
+                                <svg class="o_dw_dubai_art" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
+                                    <path class="o_dw_coast" d="M-30 420 C70 385 145 424 225 385 S380 320 450 355 S590 425 680 370 S845 305 1035 340 L1035 665 L-30 665 Z"/>
+                                    <path class="o_dw_waterline" d="M-30 420 C70 385 145 424 225 385 S380 320 450 355 S590 425 680 370 S845 305 1035 340"/>
+                                    <path class="o_dw_road" d="M125 620 C170 520 228 430 301 334 S414 180 438 -20"/>
+                                    <path class="o_dw_road is-main" d="M50 205 C220 230 330 270 460 248 S720 190 1040 205"/>
+                                    <path class="o_dw_road" d="M-20 520 C130 470 250 440 400 455 S720 520 1030 465"/>
+                                    <path class="o_dw_road" d="M430 620 C470 500 526 410 600 330 S770 230 920 -20"/>
+                                    <path class="o_dw_road is-secondary" d="M-20 315 C145 300 260 320 405 305 S765 275 1035 295"/>
+                                    <text x="500" y="86" class="o_dw_map_label">DUBAI</text>
+                                    <text x="690" y="392" class="o_dw_map_sub_label">ARABIAN GULF</text>
+                                    <text x="135" y="130" class="o_dw_map_sub_label">JEBEL ALI</text>
+                                    <text x="743" y="145" class="o_dw_map_sub_label">DOWNTOWN</text>
+                                </svg>
+                                <div class="o_dw_map_nodes">
+                                    <t t-foreach="locatedSites" t-as="site" t-key="site.id">
+                                        <button type="button"
+                                                t-att-class="state.selectedId === site.id ? 'o_dw_map_node is-selected' : 'o_dw_map_node'"
+                                                t-att-style="nodeStyle(site)"
+                                                t-att-title="site.name"
+                                                t-on-click="() => this.selectSite(site.id)">
+                                            <span class="o_dw_node_pulse"/>
+                                            <span class="o_dw_node_core"/>
+                                            <span class="o_dw_node_label" t-esc="site.name"/>
+                                        </button>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="o_dw_map_controls">
+                                <button type="button" aria-label="Zoom in" t-on-click="() => this.zoomFallback(0.1)">+</button>
+                                <button type="button" aria-label="Zoom out" t-on-click="() => this.zoomFallback(-0.1)">−</button>
+                            </div>
+                            <div class="o_dw_map_attribution">DUBAI · WGS84 COORDINATES</div>
+                        </div>
+                        <div t-if="state.mapMessage" class="o_dw_map_notice">
+                            <span class="fa fa-info-circle" aria-hidden="true"/>
+                            <span t-esc="state.mapMessage"/>
+                        </div>
+                        <div t-if="!locatedSites.length and !state.loading" class="o_dw_no_locations">
+                            <span class="fa fa-map-marker"/>
+                            <strong>No mapped sites yet</strong>
+                            <span>Add latitude and longitude to a solar site to place it on the map.</span>
+                        </div>
+                    </div>
+                    <footer class="o_dw_map_footer">
+                        <span><i class="o_dw_legend_dot is-red"/>Clean due</span>
+                        <span><i class="o_dw_legend_dot is-amber"/>Approaching</span>
+                        <span><i class="o_dw_legend_dot is-green"/>On track</span>
+                        <span class="o_dw_coordinates_count"><span t-esc="locatedSites.length"/> / <span t-esc="stats.total"/> sites mapped</span>
+                    </footer>
+                </div>
+
+                <aside class="o_dw_site_panel">
+                    <t t-if="selectedSite">
+                        <div class="o_dw_site_panel_header">
+                            <div>
+                                <span class="o_dw_eyebrow">SELECTED SITE</span>
+                                <h2 t-esc="selectedSite.name"/>
+                                <p t-esc="selectedSite.partner_id?.[1] || 'Customer not set'"/>
+                            </div>
+                            <span t-att-class="`o_dw_status_badge is-${selectedSite.status || 'unknown'}`" t-esc="statusLabel(selectedSite.status)"/>
+                        </div>
+
+                        <div class="o_dw_site_metrics">
+                            <div><span>Lost since clean</span><strong t-esc="money(selectedSite.running_loss)"/></div>
+                            <div><span>Losing per day</span><strong t-esc="money(selectedSite.avg_daily_loss)"/></div>
+                            <div><span>Clean cost</span><strong t-esc="money(selectedSite.cleaning_cost)"/></div>
+                            <div><span>Clean due in</span><strong><t t-esc="selectedSite.days_to_trigger"/> days</strong></div>
+                        </div>
+
+                        <div class="o_dw_site_specs">
+                            <div><span>System size</span><strong><t t-esc="number(selectedSite.capacity_kwp, 0)"/> kWp</strong></div>
+                            <div><span>Current loss</span><strong><t t-esc="number(selectedSite.current_loss_pct, 1)"/>%</strong></div>
+                            <div><span>Dust rate</span><strong><t t-esc="number(selectedSite.dust_rate_pct, 2)"/>% / day</strong></div>
+                            <div><span>Last reading</span><strong t-esc="selectedSite.last_reading_date || 'No readings'"/></div>
+                            <div><span>Coordinates</span><strong><t t-esc="number(selectedSite.latitude, 4)"/>, <t t-esc="number(selectedSite.longitude, 4)"/></strong></div>
+                        </div>
+
+                        <div class="o_dw_actions">
+                            <button type="button" class="o_dw_button_primary" t-on-click="openSite">Open site record</button>
+                            <button type="button" class="o_dw_button_secondary" t-on-click="openSimulator">Clean now vs wait</button>
+                        </div>
+
+                        <div class="o_dw_history_header">
+                            <div>
+                                <span class="o_dw_eyebrow">SITE HISTORY</span>
+                                <h3>Service log</h3>
+                            </div>
+                            <div class="o_dw_log_actions">
+                                <button type="button" title="Open readings" t-on-click="openReadings"><span class="fa fa-chart-line"/></button>
+                                <button type="button" title="Open cleaning jobs" t-on-click="openJobs"><span class="fa fa-wrench"/></button>
+                            </div>
+                        </div>
+                        <div class="o_dw_history_tabs">
+                            <button type="button" t-att-class="state.historyTab === 'all' ? 'is-active' : ''" t-on-click="() => this.setHistoryTab('all')">All <span t-esc="state.history.length"/></button>
+                            <button type="button" t-att-class="state.historyTab === 'reading' ? 'is-active' : ''" t-on-click="() => this.setHistoryTab('reading')">Readings</button>
+                            <button type="button" t-att-class="state.historyTab === 'cleaning' ? 'is-active' : ''" t-on-click="() => this.setHistoryTab('cleaning')">Cleanings</button>
+                        </div>
+                        <div class="o_dw_history_list">
+                            <div t-if="state.historyLoading" class="o_dw_history_empty">Loading site history…</div>
+                            <t t-elif="filteredHistory.length">
+                                <t t-foreach="filteredHistory" t-as="entry" t-key="entry.type + entry.sortDate + entry.title">
+                                    <article class="o_dw_history_entry">
+                                        <span t-att-class="entry.type === 'reading' ? 'o_dw_history_icon is-reading' : 'o_dw_history_icon is-cleaning'">
+                                            <span t-att-class="entry.type === 'reading' ? 'fa fa-bolt' : 'fa fa-wrench'"/>
+                                        </span>
+                                        <div class="o_dw_history_copy">
+                                            <div class="o_dw_history_title"><strong t-esc="entry.title"/><time t-esc="entry.date || 'Date not set'"/></div>
+                                            <p t-esc="entry.detail"/>
+                                            <small t-esc="entry.result"/>
+                                            <p t-if="entry.explanation" class="o_dw_history_explanation" t-esc="entry.explanation"/>
+                                        </div>
+                                    </article>
+                                </t>
+                            </t>
+                            <div t-elif="!state.historyLoading" class="o_dw_history_empty">No site history yet. Imported readings and cleaning jobs will appear here.</div>
+                        </div>
+                    </t>
+                    <div t-else="" class="o_dw_empty_selection">
+                        <span class="fa fa-crosshairs"/>
+                        <strong>Select a live node</strong>
+                        <p>Choose a site on the map to see its current performance and full service history.</p>
+                    </div>
+                </aside>
+            </section>
+        </main>
+    </t>
+</templates>

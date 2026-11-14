@@ -106,6 +106,7 @@ days
 <!--  SEC-04: "Clean now vs wait" for everyone; the other
                          three buttons for managers only.  -->
 <button name="action_open_simulator" type="object" string="Clean now vs wait" class="btn-primary" invisible="not id"/>
+<button name="action_open_live_map" type="object" string="Show on live map" class="o_dustwatch_brand_btn" invisible="not id"/>
 <button name="action_request_clean" type="object" string="Request clean" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
 <button name="action_evaluate_now" type="object" string="Evaluate now" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
 <!--  Only when the site is flagged (WF-07).  -->
@@ -148,6 +149,8 @@ A clean is recommended for this site.
 <group string="Site settings" name="site_settings">
 <field name="partner_id"/>
 <field name="manager_id"/>
+<field name="latitude" placeholder="e.g. 25.2048"/>
+<field name="longitude" placeholder="e.g. 55.2708"/>
 <field name="capacity_kwp"/>
 <field name="price_per_kwh"/>
 <field name="cleaning_cost"/>

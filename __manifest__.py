@@ -19,8 +19,8 @@ than waiting, and proves afterwards whether the clean paid off.
     'author': 'Muhammad Umar Rizwan',
     'license': 'LGPL-3',
 
-    # ARC-01: only Contacts and Discuss on top of the base framework.
-    'depends': ['base', 'web', 'mail', 'contacts'],
+    # Contacts hold customer/site ownership; CRM provides the sales front end.
+    'depends': ['base', 'web', 'mail', 'contacts', 'crm', 'website'],
 
     # ARC-03: the load order matters. Groups come first because access rights,
     # views and menus refer to them; sample data comes last because it needs
@@ -37,6 +37,8 @@ than waiting, and proves afterwards whether the clean paid off.
         'views/dustwatch_reading_views.xml',
         'views/dustwatch_cleaning_job_views.xml',
         'views/res_partner_views.xml',
+        'views/crm_lead_views.xml',
+        'views/dustwatch_live_map_views.xml',
         # 6. dialog view
         'wizard/dustwatch_simulator_views.xml',
         # 7. menus
@@ -56,6 +58,9 @@ than waiting, and proves afterwards whether the clean paid off.
         'web.assets_backend': [
             'dustwatch/static/src/output_chart/output_chart.js',
             'dustwatch/static/src/output_chart/output_chart.xml',
+            'dustwatch/static/src/live_map/live_map.js',
+            'dustwatch/static/src/live_map/live_map.xml',
+            'dustwatch/static/src/live_map/live_map.scss',
         ],
     },
 

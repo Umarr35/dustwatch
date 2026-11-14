@@ -12,6 +12,9 @@
 <button name="action_view_dustwatch_sites" type="object" class="oe_stat_button" icon="fa-sun-o" groups="dustwatch.group_dustwatch_crew">
 <field name="dustwatch_site_count" widget="statinfo" string="Solar sites"/>
 </button>
+<button name="action_view_dustwatch_map" type="object" class="oe_stat_button o_dustwatch_brand_btn" icon="fa-map-marker" groups="dustwatch.group_dustwatch_crew" invisible="not dustwatch_site_count">
+<div class="o_stat_info"><span class="o_stat_text">Live map</span></div>
+</button>
 </div>
 </field>
 </record>

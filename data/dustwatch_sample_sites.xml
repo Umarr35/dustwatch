@@ -26,6 +26,8 @@
 <field name="cleaning_cost">1500.00</field>
 <field name="performance_factor">0.800</field>
 <field name="last_cleaned_date">2026-09-29</field>
+<field name="latitude">25.2048</field>
+<field name="longitude">55.2708</field>
 </record>
 <record id="site_jebel_ali" model="dustwatch.site">
 <field name="name">Jebel Ali Warehouse 7</field>
@@ -37,6 +39,8 @@
 <field name="cleaning_cost">3200.00</field>
 <field name="performance_factor">0.800</field>
 <field name="last_cleaned_date">2026-10-17</field>
+<field name="latitude">24.9857</field>
+<field name="longitude">55.0273</field>
 </record>
 <record id="site_greenfield" model="dustwatch.site">
 <field name="name">Greenfield School Sports Hall</field>
@@ -48,6 +52,8 @@
 <field name="cleaning_cost">600.00</field>
 <field name="performance_factor">0.800</field>
 <field name="last_cleaned_date">2026-10-12</field>
+<field name="latitude">25.1174</field>
+<field name="longitude">55.2438</field>
 </record>
 </data>
 </odoo>

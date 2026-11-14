@@ -1,7 +1,7 @@
 <odoo>
 <!--  noupdate: an administrator may change the schedule; an upgrade keeps it.  -->
 <data noupdate="1">
-<!-- 
+<!--
             FR-REC-08: the same evaluation as the "Evaluate now" button,
             once a day, for all active sites.
             (From Odoo 18 on, a scheduled action has no numbercall or doall.)

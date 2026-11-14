@@ -1,7 +1,7 @@
 <odoo>
 <!--  noupdate: upgrading the module must never reset the job counter.  -->
 <data noupdate="1">
-<!-- 
+<!--
             FR-JOB-06: jobs are numbered CLN/0001, CLN/0002 and so on, in
             order of creation.
             "no_gap" keeps the counter inside the database transaction: when

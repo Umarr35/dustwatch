@@ -18,7 +18,7 @@ import re
 from datetime import date, timedelta
 
 from odoo import fields
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
 from ..models import constants as const
@@ -539,3 +539,38 @@ class TestDustwatch(TransactionCase):
         # The list footer totals (FR-FLT-05).
         self.assertMoney(sum(fleet.mapped('running_loss')), 5228.96)
         self.assertMoney(sum(fleet.mapped('avg_daily_loss')), 257.84)
+
+    def test_crm_opportunity_opens_company_solar_sites(self):
+        """CRM contacts resolve to their company's DustWatch fleet."""
+        contact = self.env['res.partner'].create({
+            'name': 'T1 Facilities Contact',
+            'parent_id': self.customer.id,
+            'type': 'contact',
+        })
+        opportunity = self.env['crm.lead'].create({
+            'name': 'T1 cleaning contract',
+            'type': 'opportunity',
+            'partner_id': contact.id,
+        })
+
+        self.assertEqual(opportunity.dustwatch_site_count, 1)
+        action = opportunity.action_view_dustwatch_sites()
+        self.assertEqual(action['res_model'], 'dustwatch.site')
+        self.assertEqual(action['domain'], [('partner_id', '=', self.customer.id)])
+        partner_map_action = self.customer.action_view_dustwatch_map()
+        self.assertEqual(partner_map_action['tag'], 'dustwatch.live_map')
+        self.assertEqual(partner_map_action['context']['dustwatch_partner_id'], self.customer.id)
+        map_action = opportunity.action_open_dustwatch_map()
+        self.assertEqual(map_action['type'], 'ir.actions.client')
+        self.assertEqual(map_action['tag'], 'dustwatch.live_map')
+        self.assertEqual(map_action['context']['dustwatch_partner_id'], self.customer.id)
+
+    def test_site_coordinate_range(self):
+        self.t1.write({'latitude': 25.2048, 'longitude': 55.2708})
+        self.assertEqual(self.t1.latitude, 25.2048)
+        self.assertEqual(self.t1.longitude, 55.2708)
+        map_action = self.t1.action_open_live_map()
+        self.assertEqual(map_action['tag'], 'dustwatch.live_map')
+        self.assertEqual(map_action['context']['dustwatch_site_id'], self.t1.id)
+        with self.assertRaises(ValidationError):
+            self.t1.write({'latitude': 91.0})

@@ -1,0 +1,7 @@
+<odoo>
+    <record id="action_dustwatch_live_map" model="ir.actions.client">
+        <field name="name">DustWatch Live map</field>
+        <field name="tag">dustwatch.live_map</field>
+        <field name="target">current</field>
+    </record>
+</odoo>
