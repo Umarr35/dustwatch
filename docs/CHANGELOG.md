@@ -1,5 +1,11 @@
 # Change log
 
+## DustWatch contrast and navbar update - 2026-11-14
+
+- Reworked Odoo navbar colors to use the Tipsy Taxi zinc-black and amber palette instead of Odoo's purple brand color.
+- Forced readable light foregrounds for inherited dark text classes on DustWatch's charcoal panels, with muted gray secondary text.
+- Matched primary buttons, selected tabs, dropdowns, and popovers to the Tipsy Taxi admin dashboard styling.
+
 ## DustWatch usability update - 2026-11-14
 
 - Made the DustWatch app tab open its live fleet map and removed the duplicate Live map submenu.

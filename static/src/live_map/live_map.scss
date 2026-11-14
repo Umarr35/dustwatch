@@ -287,7 +287,7 @@
 
     .o_dw_actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 0 18px 16px; }
     .o_dw_button_primary, .o_dw_button_secondary { min-height: 34px; padding: 7px 9px; border-radius: 8px; font-size: 10px; font-weight: 750; transition: filter 120ms ease, border-color 120ms ease; }
-    .o_dw_button_primary { border: 1px solid var(--dw-orange); color: #111113; background: var(--dw-orange); &:hover { filter: brightness(1.08); } }
+    .o_dw_button_primary { border: 1px solid #f59e0b; color: #111113; background: #f59e0b; &:hover { border-color: #fbbf24; background: #fbbf24; } }
     .o_dw_button_secondary { border: 1px solid #3f3f46; color: #fafafa; background: #18181b; &:hover { border-color: var(--dw-orange); } }
 
     .o_dw_history_header { display: flex; align-items: flex-end; justify-content: space-between; padding: 13px 18px 10px; border-top: 1px solid var(--dw-border); h3 { margin-top: 4px; font-size: 14px; font-weight: 750; } }
@@ -314,60 +314,95 @@
     &:hover { border-color: #fb923c !important; background: #fb923c !important; }
 }
 
-.o_web_client:has(.o_lead_opportunity_form) .o_main_navbar {
-    border-bottom: 1px solid #27272a;
-    background: #09090b;
-}
-
-.o_web_client:has(.o_lead_opportunity_form) .o_lead_opportunity_form .oe_stat_button {
-    border-color: #e4e4e7;
-    color: #18181b;
-    background: #fff;
-    &:hover { border-color: #f97316; }
-}
-
 .o_web_client:has(.o_dustwatch_view),
-.o_web_client:has(.o_dustwatch_live_map) {
+.o_web_client:has(.o_dustwatch_live_map),
+.o_web_client:has(.o_lead_opportunity_form) {
     color-scheme: dark;
+    --bs-body-bg: #09090b;
+    --bs-body-color: #e4e4e7;
+    --bs-secondary-color: #a1a1aa;
+    --o-main-text-color: #e4e4e7;
+    --o-view-background-color: #111113;
+    --o-navbar-background: #09090b;
+    --dw-accent: #f59e0b;
+    --dw-accent-hover: #fbbf24;
+    color: #e4e4e7;
+    background: #09090b;
 
     .o_main_navbar {
+        --NavBar-entry-backgroundColor: #09090b;
+        --NavBar-entry-backgroundColor--hover: #18181b;
+        --NavBar-entry-backgroundColor--focus: #27272a;
+        --NavBar-entry-backgroundColor--active: rgba(245, 158, 11, .13);
+        --NavBar-entry-color: #a1a1aa;
+        --NavBar-entry-color--active: #fbbf24;
+        --NavBar-entry-borderColor-active: rgba(245, 158, 11, .32);
+        --NavBar-brand-color: #fafafa;
         border-bottom: 1px solid #27272a;
-        color: #fafafa;
-        background: #09090b;
+        color: #fafafa !important;
+        background: #09090b !important;
 
-        a, button, .o_nav_entry, .dropdown-toggle { color: #e4e4e7; }
-        .o_nav_entry:hover, .dropdown-toggle:hover { color: #fff; background: #18181b; }
-        .o_nav_entry.active, .o_nav_entry[aria-current="page"] {
-            color: #fb923c;
-            box-shadow: inset 0 -2px #f97316;
+        .o_menu_brand, .o_navbar_breadcrumbs, .o_menu_toggle { color: #f4f4f5 !important; }
+        .o_nav_entry, .dropdown-toggle, .o_menu_systray button { color: #a1a1aa !important; }
+        .o_menu_sections .o_nav_entry:hover,
+        .o_menu_sections .dropdown-toggle:hover { color: #fafafa !important; background: #18181b !important; }
+        .o_menu_sections .o_nav_entry.active,
+        .o_menu_sections .o_nav_entry[aria-current="page"],
+        .o_menu_sections .dropdown-toggle[aria-expanded="true"] {
+            border-color: rgba(245, 158, 11, .32) !important;
+            color: #fbbf24 !important;
+            background: rgba(245, 158, 11, .13) !important;
+            box-shadow: none !important;
         }
     }
 
-    .o_content { color: #f4f4f5; background: #09090b; }
+    .o_content, .o_action_manager, .o_action, .o_view_controller {
+        color: #e4e4e7;
+        background: #09090b;
+    }
+
+    // Odoo's light-theme utility classes can otherwise leave dark text on the
+    // DustWatch charcoal panels. Keep muted copy visibly gray and body copy light.
+    .text-black, .text-dark, .text-body, .text-body-emphasis { color: #e4e4e7 !important; }
+    .text-muted, .text-black-50, .text-body-secondary { color: #a1a1aa !important; }
+    .o_form_label, .o_field_widget, .o_field_widget .o_input,
+    .o_list_renderer, .o_kanban_renderer, .o_graph_view, .o_pivot { color: #e4e4e7; }
+    a { color: #fbbf24; }
+    a:hover { color: #fcd34d; }
 
     .o_control_panel {
         border-bottom: 1px solid #27272a;
-        color: #f4f4f5;
-        background: #111113;
+        color: #e4e4e7 !important;
+        background: #111113 !important;
 
-        .breadcrumb-item, .breadcrumb-item a, .o_cp_action_menus button { color: #e4e4e7; }
+        .breadcrumb, .breadcrumb-item, .breadcrumb-item a,
+        .o_cp_action_menus button, .o_control_panel_main_buttons button { color: #e4e4e7 !important; }
         .o_searchview { border-color: #3f3f46; color: #fafafa; background: #09090b; }
-        .o_searchview_input, .o_searchview_facet { color: #fafafa; }
+        .o_searchview_input, .o_searchview_facet { color: #fafafa !important; }
     }
 
     .btn-primary, .o_dustwatch_brand_btn {
-        border-color: #f97316 !important;
+        border-color: var(--dw-accent) !important;
         color: #111113 !important;
-        background: #f97316 !important;
-        &:hover, &:focus { border-color: #fb923c !important; background: #fb923c !important; }
+        background: var(--dw-accent) !important;
+        &:hover, &:focus { border-color: var(--dw-accent-hover) !important; background: var(--dw-accent-hover) !important; }
     }
 
     .btn-secondary, .btn-light {
         border-color: #3f3f46;
         color: #f4f4f5;
         background: #18181b;
-        &:hover { border-color: #f97316; color: #fff; background: #27272a; }
+        &:hover { border-color: #f59e0b; color: #fff; background: #27272a; }
     }
+
+    .dropdown-menu, .o-dropdown--menu, .popover, .o_popover,
+    .modal-content, .o_dialog .modal-content {
+        border-color: #27272a;
+        color: #e4e4e7;
+        background: #18181b;
+    }
+    .dropdown-item { color: #d4d4d8; }
+    .dropdown-item:hover, .dropdown-item:focus { color: #fafafa; background: #27272a; }
 
     .o_list_view, .o_kanban_view, .o_form_view, .o_graph_view, .o_pivot {
         color: #f4f4f5;
@@ -417,14 +452,14 @@
             box-shadow: 0 8px 28px rgba(0, 0, 0, .24);
         }
         .o_notebook .nav-link { color: #a1a1aa; }
-        .o_notebook .nav-link.active { border-bottom: 2px solid #f97316; color: #fb923c; background: transparent; }
+        .o_notebook .nav-link.active { border-bottom: 2px solid #f59e0b; color: #fbbf24; background: transparent; }
         .o_notebook .tab-content { color: #f4f4f5; }
         .o_field_widget input:not([type="checkbox"]), .o_field_widget textarea, .o_field_widget select {
             border-color: #3f3f46;
             color: #fafafa;
             background: #09090b;
         }
-        .o_field_widget a { color: #fb923c; }
+        .o_field_widget a { color: #fbbf24; }
         .oe_stat_button { border-color: #3f3f46; color: #f4f4f5; background: #18181b; }
         .o_statusbar_status .o_arrow_button_current { color: #fb923c; }
     }
