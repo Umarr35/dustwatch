@@ -1,0 +1,271 @@
+<odoo>
+<!--  ================================================================
+         UI-01  Fleet priority: list (default view)
+         One row per active site, red first, then the site losing the most
+         money per day (the model's default order, DM-S-02).
+         ================================================================  -->
+<record id="dustwatch_site_view_list" model="ir.ui.view">
+<field name="name">dustwatch.site.list</field>
+<field name="model">dustwatch.site</field>
+<field name="arch" type="xml">
+<list decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'">
+<!--  FR-FLT-04: the decoration attributes above give the row
+                     text the colour of the status.  -->
+<!--  Hidden columns: needed by the money columns and by the
+                     "Inspect" badge below.  -->
+<field name="currency_id" column_invisible="1"/>
+<field name="fault_suspected" column_invisible="1"/>
+<!--  FR-FLT-03: the columns, in this order.  -->
+<field name="name"/>
+<field name="partner_id"/>
+<field name="status" widget="badge" decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'"/>
+<!--  FR-FLT-08: an "Inspect" badge beside the status of a
+                     flagged site. It is drawn as a small red pill; the
+                     pe-none class makes it a label, not a clickable button.  -->
+<button name="action_view_jobs" type="object" string="Inspect" class="btn-danger btn-sm rounded-pill pe-none" invisible="not fault_suspected"/>
+<field name="trigger_pct"/>
+<!--  FR-FLT-05: the footer totals these two columns.  -->
+<field name="running_loss" sum="Total lost since last clean"/>
+<field name="avg_daily_loss" sum="Total losing per day"/>
+<field name="current_loss_pct"/>
+<field name="days_since_clean"/>
+<field name="days_to_trigger"/>
+<field name="last_reading_date"/>
+<field name="open_job_id"/>
+</list>
+</field>
+</record>
+<!--  ================================================================
+         UI-01  Fleet priority: kanban grouped by status (FR-FLT-09)
+         ================================================================  -->
+<record id="dustwatch_site_view_kanban" model="ir.ui.view">
+<field name="name">dustwatch.site.kanban</field>
+<field name="model">dustwatch.site</field>
+<field name="arch" type="xml">
+<kanban default_group_by="status" records_draggable="0" groups_draggable="0" group_create="0" quick_create="0">
+<!--  Status is calculated, so cards cannot be dragged between
+                     columns and no column can be added.  -->
+<field name="currency_id"/>
+<field name="status"/>
+<field name="fault_suspected"/>
+<templates>
+<t t-name="card">
+<div class="d-flex align-items-center justify-content-between">
+<field name="name" class="fw-bold fs-5"/>
+<field name="status" widget="badge" decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'"/>
+</div>
+<field name="partner_id" class="text-muted"/>
+<div t-if="record.fault_suspected.raw_value">
+<span class="badge rounded-pill text-bg-danger">Inspect</span>
+</div>
+<div class="mt-2">
+Lost since last clean:
+<field name="running_loss" widget="monetary"/>
+</div>
+<div>
+Losing per day:
+<field name="avg_daily_loss" widget="monetary"/>
+</div>
+<div>
+% of trigger:
+<field name="trigger_pct"/>
+</div>
+<div>
+Clean due in:
+<field name="days_to_trigger"/>
+days
+</div>
+</t>
+</templates>
+</kanban>
+</field>
+</record>
+<!--  ================================================================
+         UI-01  Fleet priority: graph (FR-FLT-10)
+         Bars of "Lost since last clean" per site, highest first.
+         ================================================================  -->
+<record id="dustwatch_site_view_graph" model="ir.ui.view">
+<field name="name">dustwatch.site.graph</field>
+<field name="model">dustwatch.site</field>
+<field name="arch" type="xml">
+<graph type="bar" order="DESC">
+<field name="name"/>
+<field name="running_loss" type="measure"/>
+</graph>
+</field>
+</record>
+<!--  ================================================================
+         UI-02  Site page
+         ================================================================  -->
+<record id="dustwatch_site_view_form" model="ir.ui.view">
+<field name="name">dustwatch.site.form</field>
+<field name="model">dustwatch.site</field>
+<field name="arch" type="xml">
+<form string="Solar Site">
+<header>
+<!--  SEC-04: "Clean now vs wait" for everyone; the other
+                         three buttons for managers only.  -->
+<button name="action_open_simulator" type="object" string="Clean now vs wait" class="btn-primary" invisible="not id"/>
+<button name="action_request_clean" type="object" string="Request clean" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
+<button name="action_evaluate_now" type="object" string="Evaluate now" groups="dustwatch.group_dustwatch_manager" invisible="not id"/>
+<!--  Only when the site is flagged (WF-07).  -->
+<button name="action_mark_inspected" type="object" string="Mark inspected" groups="dustwatch.group_dustwatch_manager" invisible="not fault_suspected"/>
+</header>
+<!--  FR-FAU-03: warning banner on a flagged site.  -->
+<div class="alert alert-warning mb-0" role="alert" invisible="not fault_suspected"> Output did not recover after the last clean. A technical inspection is recommended. </div>
+<!--  Information line with a link to the open job, only while
+                     that job is Recommended.  -->
+<div class="alert alert-info mb-0" role="status" invisible="open_job_state != 'recommended'">
+A clean is recommended for this site.
+<field name="open_job_id" readonly="1" nolabel="1" class="oe_inline"/>
+</div>
+<sheet>
+<!--  Hidden fields used by the money fields and the banners.  -->
+<field name="currency_id" invisible="1"/>
+<field name="open_job_state" invisible="1"/>
+<!--  FR-SITE-04: smart buttons with counts.  -->
+<div class="oe_button_box" name="button_box">
+<button name="action_view_readings" type="object" class="oe_stat_button" icon="fa-line-chart">
+<field name="reading_count" widget="statinfo" string="Readings"/>
+</button>
+<button name="action_view_jobs" type="object" class="oe_stat_button" icon="fa-tint">
+<field name="job_count" widget="statinfo" string="Cleaning jobs"/>
+</button>
+</div>
+<!--  Title: site name, with the status badge beside it.  -->
+<div class="oe_title">
+<label for="name"/>
+<div class="d-flex align-items-center gap-3">
+<h1 class="mb-0">
+<field name="name" placeholder="e.g. Al Noor Hotel Rooftop"/>
+</h1>
+<field name="status" widget="badge" decoration-danger="status == 'red'" decoration-warning="status == 'amber'" decoration-success="status == 'green'"/>
+<span class="badge rounded-pill text-bg-danger" invisible="not fault_suspected">Inspect</span>
+</div>
+</div>
+<group>
+<!--  Entered by a manager (FR-SITE-01).  -->
+<group string="Site settings" name="site_settings">
+<field name="partner_id"/>
+<field name="manager_id"/>
+<field name="capacity_kwp"/>
+<field name="price_per_kwh"/>
+<field name="cleaning_cost"/>
+<field name="performance_factor"/>
+<field name="last_cleaned_date"/>
+<field name="fault_suspected"/>
+</group>
+<!--  Calculated, always read-only (FR-SITE-03).  -->
+<group string="Dust status" name="dust_status">
+<field name="trigger_pct"/>
+<field name="running_loss"/>
+<field name="running_loss_kwh"/>
+<field name="avg_daily_loss"/>
+<field name="current_loss_pct"/>
+<field name="dust_rate_pct"/>
+<field name="days_since_clean"/>
+<field name="days_to_trigger"/>
+<field name="last_reading_date"/>
+</group>
+</group>
+<notebook>
+<!--  FR-CHT-01: the chart is drawn by the JavaScript
+                             component registered as "dustwatch_output_chart"
+                             (static/src/output_chart).  -->
+<page string="Output chart" name="output_chart">
+<widget name="dustwatch_output_chart"/>
+</page>
+<page string="Readings" name="readings">
+<!--  Read-only list, newest first (the model's order).  -->
+<field name="reading_ids" readonly="1" nolabel="1">
+<list>
+<field name="currency_id" column_invisible="1"/>
+<field name="date"/>
+<field name="sun_hours"/>
+<field name="actual_kwh" string="Actual output"/>
+<field name="expected_kwh" string="Expected output"/>
+<field name="lost_kwh" string="Lost to dust"/>
+<field name="loss_pct"/>
+<field name="lost_aed"/>
+</list>
+</field>
+</page>
+<page string="Cleaning jobs" name="cleaning_jobs">
+<field name="job_ids" readonly="1" nolabel="1">
+<list>
+<field name="currency_id" column_invisible="1"/>
+<field name="name"/>
+<field name="state" widget="badge" decoration-info="state == 'recommended'" decoration-warning="state == 'scheduled'" decoration-success="state == 'done'" decoration-muted="state == 'dismissed'"/>
+<field name="recommended_date"/>
+<field name="date_done"/>
+<field name="cost"/>
+<field name="recovery_per_day"/>
+<field name="payback_days"/>
+<field name="recovery_state" widget="badge" decoration-info="recovery_state == 'pending'" decoration-success="recovery_state == 'confirmed'" decoration-danger="recovery_state == 'fault'"/>
+</list>
+</field>
+</page>
+<page string="Notes" name="notes">
+<field name="notes" nolabel="1" placeholder="Anything worth knowing about this site..."/>
+</page>
+</notebook>
+</sheet>
+<!--  Messages and activities.  -->
+<chatter/>
+</form>
+</field>
+</record>
+<!--  ================================================================
+         UI-01  Search: filters and groupings of FR-FLT-06
+         ================================================================  -->
+<record id="dustwatch_site_view_search" model="ir.ui.view">
+<field name="name">dustwatch.site.search</field>
+<field name="model">dustwatch.site</field>
+<field name="arch" type="xml">
+<search>
+<!--  Search by site and by customer.  -->
+<field name="name"/>
+<field name="partner_id"/>
+<!--  Filters of one block are combined with OR; a separator
+                     starts a new block, combined with AND.  -->
+<filter name="filter_clean_due" string="Clean due" domain="[('status', '=', 'red')]"/>
+<filter name="filter_approaching" string="Approaching" domain="[('status', '=', 'amber')]"/>
+<filter name="filter_on_track" string="On track" domain="[('status', '=', 'green')]"/>
+<separator/>
+<filter name="filter_inspection_needed" string="Inspection needed" domain="[('fault_suspected', '=', True)]"/>
+<separator/>
+<filter name="filter_with_open_job" string="With open job" domain="[('open_job_id', '!=', False)]"/>
+<separator/>
+<filter name="filter_my_sites" string="My sites" domain="[('manager_id', '=', uid)]"/>
+<!--  On Odoo 19 the group tag of a search view takes no attribute.  -->
+<group>
+<filter name="group_by_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+<filter name="group_by_status" string="Status" context="{'group_by': 'status'}"/>
+<filter name="group_by_manager" string="Operations manager" context="{'group_by': 'manager_id'}"/>
+</group>
+</search>
+</field>
+</record>
+<!--  ================================================================
+         Actions
+         ================================================================  -->
+<!--  FR-FLT-01: the first screen of the app, every active site.  -->
+<record id="action_dustwatch_site_fleet" model="ir.actions.act_window">
+<field name="name">Fleet priority</field>
+<field name="res_model">dustwatch.site</field>
+<field name="view_mode">list,kanban,graph,form</field>
+<field name="search_view_id" ref="dustwatch_site_view_search"/>
+<field name="help" type="html">
+<p class="o_view_nocontent_smiling_face"> No solar site yet </p>
+<p> Create a site, then add or import its daily readings. </p>
+</field>
+</record>
+<!--  Configuration > Sites: all sites, archived included (UI-00).  -->
+<record id="action_dustwatch_site_config" model="ir.actions.act_window">
+<field name="name">Sites</field>
+<field name="res_model">dustwatch.site</field>
+<field name="view_mode">list,form</field>
+<field name="search_view_id" ref="dustwatch_site_view_search"/>
+<field name="context">{'active_test': False}</field>
+</record>
+</odoo>

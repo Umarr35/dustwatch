@@ -1,0 +1,21 @@
+<odoo>
+<!--  noupdate: upgrading the module must never reset the job counter.  -->
+<data noupdate="1">
+<!-- 
+            FR-JOB-06: jobs are numbered CLN/0001, CLN/0002 and so on, in
+            order of creation.
+            "no_gap" keeps the counter inside the database transaction: when
+            an import is only tested, or an operation is rolled back, the
+            number is given back instead of being skipped.
+            company_id is empty so the sequence is shared by all companies.
+         -->
+<record id="seq_dustwatch_cleaning_job" model="ir.sequence">
+<field name="name">DustWatch cleaning job</field>
+<field name="code">dustwatch.cleaning.job</field>
+<field name="prefix">CLN/</field>
+<field name="padding">4</field>
+<field name="implementation">no_gap</field>
+<field name="company_id" eval="False"/>
+</record>
+</data>
+</odoo>

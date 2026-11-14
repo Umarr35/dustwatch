@@ -1,0 +1,19 @@
+<odoo>
+<!--  noupdate: an administrator may change the schedule; an upgrade keeps it.  -->
+<data noupdate="1">
+<!-- 
+            FR-REC-08: the same evaluation as the "Evaluate now" button,
+            once a day, for all active sites.
+            (From Odoo 18 on, a scheduled action has no numbercall or doall.)
+         -->
+<record id="ir_cron_dustwatch_evaluate_sites" model="ir.cron">
+<field name="name">DustWatch: evaluate sites</field>
+<field name="model_id" ref="model_dustwatch_site"/>
+<field name="state">code</field>
+<field name="code">model._cron_evaluate_sites()</field>
+<field name="interval_number">1</field>
+<field name="interval_type">days</field>
+<field name="active" eval="True"/>
+</record>
+</data>
+</odoo>

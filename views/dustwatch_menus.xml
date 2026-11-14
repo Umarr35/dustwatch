@@ -1,0 +1,27 @@
+<odoo>
+<!-- 
+        UI-00  Menus
+
+        DustWatch                    app menu with its own icon
+        |- Fleet priority            UI-01, opens first
+        |- Cleaning jobs             UI-04
+        |- Readings                  UI-03
+        |- Reporting
+        |  |- Cleaning results       UI-07
+        |- Configuration             managers only
+           |- Sites                  all sites, archived included
+
+        SEC-07: the app menu is limited to the Crew group (managers are crew
+        as well), so a user in neither group does not see DustWatch.
+     -->
+<menuitem id="menu_dustwatch_root" name="DustWatch" web_icon="dustwatch,static/description/icon.png" groups="dustwatch.group_dustwatch_crew" sequence="10"/>
+<!--  The first child with an action is the screen the app opens on.  -->
+<menuitem id="menu_dustwatch_fleet" name="Fleet priority" parent="menu_dustwatch_root" action="action_dustwatch_site_fleet" sequence="10"/>
+<menuitem id="menu_dustwatch_cleaning_jobs" name="Cleaning jobs" parent="menu_dustwatch_root" action="action_dustwatch_cleaning_job" sequence="20"/>
+<menuitem id="menu_dustwatch_readings" name="Readings" parent="menu_dustwatch_root" action="action_dustwatch_reading" sequence="30"/>
+<menuitem id="menu_dustwatch_reporting" name="Reporting" parent="menu_dustwatch_root" sequence="40"/>
+<menuitem id="menu_dustwatch_cleaning_results" name="Cleaning results" parent="menu_dustwatch_reporting" action="action_dustwatch_cleaning_results" sequence="10"/>
+<!--  SEC-05: the Configuration menu is for managers only.  -->
+<menuitem id="menu_dustwatch_configuration" name="Configuration" parent="menu_dustwatch_root" groups="dustwatch.group_dustwatch_manager" sequence="90"/>
+<menuitem id="menu_dustwatch_sites" name="Sites" parent="menu_dustwatch_configuration" action="action_dustwatch_site_config" sequence="10"/>
+</odoo>

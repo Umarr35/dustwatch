@@ -1,0 +1,121 @@
+<odoo>
+<!--  ================================================================
+         UI-03  Readings: list, editable in place (default view)
+         A manager types Site, Date, Sun hours and Actual output. The other
+         columns are calculated and read-only (FR-READ-02).
+         Crew members only have read access to readings, so Odoo hides
+         "New", editing and "Import records" from them by itself (SEC-05).
+         ================================================================  -->
+<record id="dustwatch_reading_view_list" model="ir.ui.view">
+<field name="name">dustwatch.reading.list</field>
+<field name="model">dustwatch.reading</field>
+<field name="arch" type="xml">
+<list editable="bottom">
+<field name="currency_id" column_invisible="1"/>
+<field name="site_id"/>
+<field name="date"/>
+<field name="sun_hours"/>
+<!--  The footer totals the three kWh columns and the money lost.  -->
+<field name="actual_kwh" sum="Total actual output"/>
+<field name="expected_kwh" sum="Total expected output"/>
+<field name="lost_kwh" sum="Total lost to dust"/>
+<field name="loss_pct"/>
+<field name="lost_aed" sum="Total money lost"/>
+</list>
+</field>
+</record>
+<!--  A plain page for one reading. Used when a reading is opened from a
+         place where the list cannot be edited (for example by a crew member).  -->
+<record id="dustwatch_reading_view_form" model="ir.ui.view">
+<field name="name">dustwatch.reading.form</field>
+<field name="model">dustwatch.reading</field>
+<field name="arch" type="xml">
+<form string="Daily Reading">
+<sheet>
+<field name="currency_id" invisible="1"/>
+<group>
+<group string="Reading" name="reading">
+<field name="site_id"/>
+<field name="partner_id"/>
+<field name="date"/>
+<field name="sun_hours"/>
+<field name="actual_kwh"/>
+</group>
+<group string="Calculated" name="calculated">
+<field name="expected_kwh"/>
+<field name="lost_kwh"/>
+<field name="loss_pct"/>
+<field name="lost_aed"/>
+</group>
+</group>
+</sheet>
+</form>
+</field>
+</record>
+<!--  ================================================================
+         UI-03  Readings: graph and pivot (FR-READ-09)
+         Measures: actual, expected and lost kWh, and money lost.
+         ================================================================  -->
+<record id="dustwatch_reading_view_graph" model="ir.ui.view">
+<field name="name">dustwatch.reading.graph</field>
+<field name="model">dustwatch.reading</field>
+<field name="arch" type="xml">
+<graph type="line">
+<field name="date" interval="day"/>
+<field name="site_id"/>
+<field name="actual_kwh" type="measure"/>
+</graph>
+</field>
+</record>
+<record id="dustwatch_reading_view_pivot" model="ir.ui.view">
+<field name="name">dustwatch.reading.pivot</field>
+<field name="model">dustwatch.reading</field>
+<field name="arch" type="xml">
+<pivot>
+<field name="site_id" type="row"/>
+<field name="date" interval="month" type="col"/>
+<field name="actual_kwh" type="measure"/>
+<field name="expected_kwh" type="measure"/>
+<field name="lost_kwh" type="measure"/>
+<field name="lost_aed" type="measure"/>
+</pivot>
+</field>
+</record>
+<!--  ================================================================
+         UI-03  Search
+         ================================================================  -->
+<record id="dustwatch_reading_view_search" model="ir.ui.view">
+<field name="name">dustwatch.reading.search</field>
+<field name="model">dustwatch.reading</field>
+<field name="arch" type="xml">
+<search>
+<!--  Search by site and by customer.  -->
+<field name="site_id"/>
+<field name="partner_id"/>
+<!--  context_today() is today's date in the user's time zone.  -->
+<filter name="filter_this_month" string="This month" domain="[('date', '>=', context_today().strftime('%Y-%m-01'))]"/>
+<filter name="filter_last_30_days" string="Last 30 days" domain="[('date', '>=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+<group>
+<filter name="group_by_site" string="Site" context="{'group_by': 'site_id'}"/>
+<filter name="group_by_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+<filter name="group_by_day" string="Date: day" context="{'group_by': 'date:day'}"/>
+<filter name="group_by_week" string="Date: week" context="{'group_by': 'date:week'}"/>
+<filter name="group_by_month" string="Date: month" context="{'group_by': 'date:month'}"/>
+</group>
+</search>
+</field>
+</record>
+<!--  ================================================================
+         Action
+         ================================================================  -->
+<record id="action_dustwatch_reading" model="ir.actions.act_window">
+<field name="name">Readings</field>
+<field name="res_model">dustwatch.reading</field>
+<field name="view_mode">list,graph,pivot,form</field>
+<field name="search_view_id" ref="dustwatch_reading_view_search"/>
+<field name="help" type="html">
+<p class="o_view_nocontent_smiling_face"> No reading yet </p>
+<p> Type a reading, or import a file with four columns: site, date, sun hours and actual output. </p>
+</field>
+</record>
+</odoo>

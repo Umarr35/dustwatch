@@ -1,0 +1,9 @@
+<odoo>
+<!-- 
+        DAT-07: one evaluation after all other data is loaded.
+        It measures the result of the past cleans and creates the first
+        recommendation of the sample data. Running it again on an upgrade
+        changes nothing (REC-06).
+     -->
+<function model="dustwatch.site" name="_cron_evaluate_sites"/>
+</odoo>

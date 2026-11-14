@@ -1,0 +1,317 @@
+<odoo>
+<!--  ================================================================
+         UI-04  Cleaning jobs board (default view)
+         Columns Recommended, Scheduled and Done are always shown, in this
+         order (DM-J-04, see _group_expand_states on the model).
+         FR-JOB-02 / WF-09: no "New" button, no quick create, and cards
+         cannot be dragged: a job changes state only through its buttons.
+         ================================================================  -->
+<record id="dustwatch_cleaning_job_view_kanban" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.kanban</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="arch" type="xml">
+<kanban default_group_by="state" create="0" quick_create="0" group_create="0" records_draggable="0" groups_draggable="0">
+<!--  Loaded for the conditions and money amounts of the card.  -->
+<field name="currency_id"/>
+<field name="state"/>
+<field name="recovery_state"/>
+<field name="scheduled_date"/>
+<templates>
+<t t-name="card">
+<!--  Reference and site name  -->
+<div class="d-flex justify-content-between">
+<field name="name" class="fw-bold"/>
+<field name="site_id" class="fw-bold text-truncate ms-2"/>
+</div>
+<!--  Customer  -->
+<field name="partner_id" class="text-muted"/>
+<!--  FR-EXP-05: one line with the three key figures  -->
+<div class="mt-1 small">
+Lost
+<field name="trigger_running_loss" widget="monetary"/>
+| Cost
+<field name="cost" widget="monetary"/>
+|
+<field name="trigger_pct"/>
+% of trigger
+</div>
+<!--  Scheduled date when scheduled  -->
+<div class="small" t-if="record.state.raw_value == 'scheduled' and record.scheduled_date.raw_value">
+Scheduled for
+<field name="scheduled_date"/>
+</div>
+<footer class="pt-2">
+<!--  Result badge and payback days when done  -->
+<div class="d-flex align-items-center gap-2" t-if="record.state.raw_value == 'done'">
+<field name="recovery_state" widget="badge" decoration-info="recovery_state == 'pending'" decoration-success="recovery_state == 'confirmed'" decoration-danger="recovery_state == 'fault'"/>
+<span class="small" t-if="record.recovery_state.raw_value == 'confirmed' or record.recovery_state.raw_value == 'fault'">
+Payback:
+<field name="payback_days"/>
+days
+</span>
+</div>
+<!--  Crew avatar when assigned  -->
+<field name="crew_user_id" widget="many2one_avatar_user" class="ms-auto"/>
+</footer>
+</t>
+</templates>
+</kanban>
+</field>
+</record>
+<!--  ================================================================
+         UI-04  Cleaning jobs: list beside the board (FR-JOB-07)
+         priority 10 makes it the default list of the model; the results
+         list below has priority 20.
+         ================================================================  -->
+<record id="dustwatch_cleaning_job_view_list" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.list</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="priority">10</field>
+<field name="arch" type="xml">
+<list create="0">
+<field name="currency_id" column_invisible="1"/>
+<field name="name"/>
+<field name="site_id"/>
+<field name="partner_id"/>
+<field name="state" widget="badge" decoration-info="state == 'recommended'" decoration-warning="state == 'scheduled'" decoration-success="state == 'done'" decoration-muted="state == 'dismissed'"/>
+<field name="recommended_date"/>
+<field name="scheduled_date"/>
+<field name="date_done"/>
+<field name="cost"/>
+<field name="recovery_state" widget="badge" decoration-info="recovery_state == 'pending'" decoration-success="recovery_state == 'confirmed'" decoration-danger="recovery_state == 'fault'"/>
+</list>
+</field>
+</record>
+<!--  ================================================================
+         UI-05  Cleaning job page
+         ================================================================  -->
+<record id="dustwatch_cleaning_job_view_form" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.form</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="arch" type="xml">
+<form string="Cleaning Job" create="0" duplicate="0">
+<header>
+<!--  FR-JOB-03: each button is shown only in the states
+                         where its transition is allowed (WF-03 to WF-05).
+                         SEC-04: Accept, Dismiss and Send to owner are for
+                         managers; Mark done and the simulator are for both
+                         groups.  -->
+<button name="action_accept" type="object" string="Accept" class="btn-primary" groups="dustwatch.group_dustwatch_manager" invisible="state != 'recommended'"/>
+<button name="action_done" type="object" string="Mark done" class="btn-primary" invisible="state != 'scheduled'"/>
+<button name="action_dismiss" type="object" string="Dismiss" groups="dustwatch.group_dustwatch_manager" invisible="state not in ('recommended', 'scheduled')"/>
+<button name="action_open_simulator" type="object" string="Clean now vs wait" invisible="state not in ('recommended', 'scheduled')"/>
+<button name="action_send_to_owner" type="object" string="Send to owner" groups="dustwatch.group_dustwatch_manager"/>
+<!--  Dismissed is not listed, so it appears in the bar
+                         only on a dismissed job. The bar is not clickable:
+                         the field is read-only (WF-09).  -->
+<field name="state" widget="statusbar" statusbar_visible="recommended,scheduled,done"/>
+</header>
+<sheet>
+<field name="currency_id" invisible="1"/>
+<!--  Title: reference, then site as a link, then customer.  -->
+<div class="oe_title">
+<h1>
+<field name="name"/>
+</h1>
+<h2>
+<field name="site_id" readonly="1"/>
+</h2>
+<field name="partner_id"/>
+</div>
+<group>
+<!--  Editable only where the job page allows it:
+                             crew, scheduled date and cost while Recommended
+                             or Scheduled (FR-JOB-04); cleaned on while
+                             Scheduled; the dismissal reason while open.  -->
+<group string="Planning" name="planning">
+<field name="manager_id" readonly="1"/>
+<field name="crew_user_id" readonly="state not in ('recommended', 'scheduled')"/>
+<field name="recommended_date"/>
+<field name="scheduled_date" readonly="state not in ('recommended', 'scheduled')"/>
+<field name="date_done" readonly="state != 'scheduled'"/>
+<field name="cost" readonly="state not in ('recommended', 'scheduled')"/>
+<field name="origin"/>
+<field name="dismiss_reason" readonly="state not in ('recommended', 'scheduled')"/>
+</group>
+<!--  FR-RCV-03: shown when the job is Done.  -->
+<group string="Result of the clean" name="result" invisible="state != 'done'">
+<field name="recovery_state" widget="badge" decoration-info="recovery_state == 'pending'" decoration-success="recovery_state == 'confirmed'" decoration-danger="recovery_state == 'fault'"/>
+<field name="loss_before_per_day"/>
+<field name="loss_after_per_day"/>
+<field name="loss_pct_before"/>
+<field name="loss_pct_after"/>
+<field name="recovery_per_day"/>
+<field name="recovery_pct"/>
+<field name="payback_days"/>
+</group>
+</group>
+<!--  FR-EXP-03: the explanation text, then the snapshot
+                         figures as a labelled breakdown in two columns.  -->
+<separator string="Why this recommendation"/>
+<field name="explanation" nolabel="1" invisible="not explanation"/>
+<div class="text-muted mb-3" invisible="explanation"> No explanation stored for this job. </div>
+<group name="snapshot">
+<group name="snapshot_left">
+<field name="snapshot_date"/>
+<field name="trigger_running_loss"/>
+<field name="trigger_cleaning_cost"/>
+<field name="trigger_pct"/>
+<field name="trigger_days_since_clean"/>
+</group>
+<group name="snapshot_right">
+<field name="trigger_last_cleaned_date"/>
+<field name="trigger_loss_pct"/>
+<field name="trigger_avg_daily_loss"/>
+<field name="trigger_dust_rate_pct"/>
+<field name="trigger_wait_cost"/>
+</group>
+</group>
+</sheet>
+<!--  Messages and activities.  -->
+<chatter/>
+</form>
+</field>
+</record>
+<!--  ================================================================
+         UI-04  Search of the board and its list
+         ================================================================  -->
+<record id="dustwatch_cleaning_job_view_search" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.search</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="priority">10</field>
+<field name="arch" type="xml">
+<search>
+<field name="name"/>
+<field name="site_id"/>
+<field name="partner_id"/>
+<!--  FR-JOB-05: jobs assigned to the current user.  -->
+<filter name="filter_my_jobs" string="My jobs" domain="[('crew_user_id', '=', uid)]"/>
+<separator/>
+<!--  The four status filters form one block (combined with
+                     OR). The menu action switches the first three on, which
+                     hides dismissed jobs until "Dismissed" is ticked too
+                     (FR-JOB-01).  -->
+<filter name="filter_recommended" string="Recommended" domain="[('state', '=', 'recommended')]"/>
+<filter name="filter_scheduled" string="Scheduled" domain="[('state', '=', 'scheduled')]"/>
+<filter name="filter_done" string="Done" domain="[('state', '=', 'done')]"/>
+<filter name="filter_dismissed" string="Dismissed" domain="[('state', '=', 'dismissed')]"/>
+<separator/>
+<filter name="filter_no_recovery" string="No recovery" domain="[('recovery_state', '=', 'fault')]"/>
+<group>
+<filter name="group_by_state" string="Status" context="{'group_by': 'state'}"/>
+<filter name="group_by_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+<filter name="group_by_site" string="Site" context="{'group_by': 'site_id'}"/>
+</group>
+</search>
+</field>
+</record>
+<!--  ================================================================
+         UI-07  Cleaning results: done jobs with their payback
+         ================================================================  -->
+<record id="dustwatch_cleaning_job_view_list_results" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.list.results</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="priority">20</field>
+<field name="arch" type="xml">
+<list create="0">
+<!--  create="0": nothing can be created here.  -->
+<field name="currency_id" column_invisible="1"/>
+<field name="name"/>
+<field name="site_id"/>
+<field name="partner_id"/>
+<field name="date_done"/>
+<!--  FR-RPT-02: the footer totals cost and recovered per day.  -->
+<field name="cost" sum="Total cost of cleans"/>
+<field name="loss_before_per_day"/>
+<field name="loss_after_per_day"/>
+<field name="recovery_per_day" sum="Total recovered per day"/>
+<field name="recovery_pct"/>
+<field name="payback_days"/>
+<field name="recovery_state" widget="badge" decoration-info="recovery_state == 'pending'" decoration-success="recovery_state == 'confirmed'" decoration-danger="recovery_state == 'fault'"/>
+</list>
+</field>
+</record>
+<!--  FR-RPT-03: rows by customer, columns by month. Cost and recovered
+         per day are summed; payback days are averaged (set on the field).  -->
+<record id="dustwatch_cleaning_job_view_pivot" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.pivot</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="arch" type="xml">
+<pivot>
+<field name="partner_id" type="row"/>
+<field name="date_done" interval="month" type="col"/>
+<field name="cost" type="measure"/>
+<field name="recovery_per_day" type="measure"/>
+<field name="payback_days" type="measure"/>
+</pivot>
+</field>
+</record>
+<record id="dustwatch_cleaning_job_view_graph" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.graph</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="arch" type="xml">
+<graph type="bar">
+<field name="partner_id"/>
+<field name="date_done" interval="month"/>
+<field name="recovery_per_day" type="measure"/>
+</graph>
+</field>
+</record>
+<record id="dustwatch_cleaning_job_view_search_results" model="ir.ui.view">
+<field name="name">dustwatch.cleaning.job.search.results</field>
+<field name="model">dustwatch.cleaning.job</field>
+<field name="priority">20</field>
+<field name="arch" type="xml">
+<search>
+<field name="name"/>
+<field name="site_id"/>
+<field name="partner_id"/>
+<filter name="filter_recovery_confirmed" string="Recovery confirmed" domain="[('recovery_state', '=', 'confirmed')]"/>
+<filter name="filter_no_recovery" string="No recovery" domain="[('recovery_state', '=', 'fault')]"/>
+<filter name="filter_awaiting_readings" string="Awaiting readings" domain="[('recovery_state', '=', 'pending')]"/>
+<group>
+<filter name="group_by_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+<filter name="group_by_site" string="Site" context="{'group_by': 'site_id'}"/>
+<filter name="group_by_month" string="Cleaned on: month" context="{'group_by': 'date_done:month'}"/>
+</group>
+</search>
+</field>
+</record>
+<!--  ================================================================
+         Actions
+         ================================================================  -->
+<!--  UI-04: board first, then list. The three search_default_ keys switch
+         on Recommended, Scheduled and Done, so dismissed jobs stay hidden
+         unless the Dismissed filter is on.  -->
+<record id="action_dustwatch_cleaning_job" model="ir.actions.act_window">
+<field name="name">Cleaning jobs</field>
+<field name="res_model">dustwatch.cleaning.job</field>
+<field name="view_mode">kanban,list,form</field>
+<field name="search_view_id" ref="dustwatch_cleaning_job_view_search"/>
+<field name="context">{'search_default_filter_recommended': 1, 'search_default_filter_scheduled': 1, 'search_default_filter_done': 1}</field>
+<field name="help" type="html">
+<p class="o_view_nocontent_smiling_face"> No cleaning job yet </p>
+<p> DustWatch recommends a clean when the money lost since the last clean reaches the cost of one clean. </p>
+</field>
+</record>
+<!--  UI-07: limited to done jobs, with its own list and search.  -->
+<record id="action_dustwatch_cleaning_results" model="ir.actions.act_window">
+<field name="name">Cleaning results</field>
+<field name="res_model">dustwatch.cleaning.job</field>
+<field name="view_mode">list,pivot,graph,form</field>
+<field name="domain">[('state', '=', 'done')]</field>
+<field name="search_view_id" ref="dustwatch_cleaning_job_view_search_results"/>
+<field name="help" type="html">
+<p class="o_view_nocontent_smiling_face"> No clean has been done yet </p>
+<p> Each finished clean appears here with its recovery and payback. </p>
+</field>
+</record>
+<!--  Bind the results list to the action (the other view types use the
+         only view the model has for them).  -->
+<record id="action_dustwatch_cleaning_results_view_list" model="ir.actions.act_window.view">
+<field name="sequence">1</field>
+<field name="view_mode">list</field>
+<field name="view_id" ref="dustwatch_cleaning_job_view_list_results"/>
+<field name="act_window_id" ref="action_dustwatch_cleaning_results"/>
+</record>
+</odoo>

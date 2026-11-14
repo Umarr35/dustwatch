@@ -1,0 +1,18 @@
+<odoo>
+<!--  UI-08 / FR-SITE-06: the standard contact form gains one smart
+         button, "Solar sites", with a count. It opens the fleet priority
+         screen filtered to that customer. The button is shown to DustWatch
+         users only.  -->
+<record id="res_partner_view_form_dustwatch" model="ir.ui.view">
+<field name="name">res.partner.form.dustwatch</field>
+<field name="model">res.partner</field>
+<field name="inherit_id" ref="base.view_partner_form"/>
+<field name="arch" type="xml">
+<div name="button_box" position="inside">
+<button name="action_view_dustwatch_sites" type="object" class="oe_stat_button" icon="fa-sun-o" groups="dustwatch.group_dustwatch_crew">
+<field name="dustwatch_site_count" widget="statinfo" string="Solar sites"/>
+</button>
+</div>
+</field>
+</record>
+</odoo>

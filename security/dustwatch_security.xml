@@ -1,0 +1,32 @@
+<odoo>
+<!-- 
+        SEC-01: two user groups under an application category "DustWatch".
+
+        Odoo 19 uses three levels: category > privilege > group. The
+        privilege is what appears as one drop-down ("DustWatch": Crew or
+        Manager) on the user form. On Odoo 19 a group points to its
+        privilege with privilege_id, and lists its users in user_ids.
+     -->
+<record id="module_category_dustwatch" model="ir.module.category">
+<field name="name">DustWatch</field>
+<field name="sequence">50</field>
+</record>
+<record id="res_groups_privilege_dustwatch" model="res.groups.privilege">
+<field name="name">DustWatch</field>
+<field name="category_id" ref="module_category_dustwatch"/>
+</record>
+<!--  Crew: see everything and confirm cleans. Implies an internal user.  -->
+<record id="group_dustwatch_crew" model="res.groups">
+<field name="name">Crew</field>
+<field name="privilege_id" ref="res_groups_privilege_dustwatch"/>
+<field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+</record>
+<!--  Manager: also decide and configure. Implies Crew.
+         SEC-02: the administrator is a manager from install.  -->
+<record id="group_dustwatch_manager" model="res.groups">
+<field name="name">Manager</field>
+<field name="privilege_id" ref="res_groups_privilege_dustwatch"/>
+<field name="implied_ids" eval="[(4, ref('group_dustwatch_crew'))]"/>
+<field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+</record>
+</odoo>

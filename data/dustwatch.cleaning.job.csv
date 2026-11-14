@@ -1,0 +1,5 @@
+id,site_id/id,state,origin,recommended_date,scheduled_date,date_done,cost,trigger_cleaning_cost,trigger_running_loss,trigger_days_since_clean
+sample_job_0001,site_al_noor,done,auto,2026-09-27,2026-09-29,2026-09-29,1500.00,1500.00,1539.36,44
+sample_job_0002,site_jebel_ali,done,auto,2026-09-13,2026-09-14,2026-09-14,3200.00,3200.00,3203.01,30
+sample_job_0003,site_jebel_ali,done,auto,2026-10-16,2026-10-17,2026-10-17,3200.00,3200.00,3349.28,32
+sample_job_0004,site_greenfield,done,auto,2026-10-09,2026-10-12,2026-10-12,600.00,600.00,604.14,56

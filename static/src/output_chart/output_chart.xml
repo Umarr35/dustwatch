@@ -1,0 +1,18 @@
+<templates xml:space="preserve">
+<!--  Template of the output chart component (output_chart.js).
+         The canvas sits in a box at least 320 px high (UI-02); Chart.js
+         draws the two lines, the legend and the clean markers into it.  -->
+<t t-name="dustwatch.OutputChart">
+<div class="o_dustwatch_output_chart w-100">
+<div t-if="hasData" style="position: relative; height: 360px;">
+<canvas t-ref="canvas"/>
+</div>
+<div t-elif="state.unavailable" class="text-muted p-3">
+                The output chart could not be loaded. Reload the page to try again.
+            </div>
+<div t-else="" class="text-muted p-3">
+                No readings to chart yet. Add or import readings for this site.
+            </div>
+</div>
+</t>
+</templates>

@@ -1,0 +1,98 @@
+<odoo>
+<!--  ================================================================
+         UI-06  Simulator dialog "Clean now vs wait"
+         Every figure is calculated by the model (CAL-14); this view only
+         lays the figures out. It is opened as a dialog by
+         action_open_simulator on the site and on the job.
+         ================================================================  -->
+<record id="dustwatch_simulator_view_form" model="ir.ui.view">
+<field name="name">dustwatch.simulator.form</field>
+<field name="model">dustwatch.simulator</field>
+<field name="arch" type="xml">
+<form string="Clean now vs wait">
+<sheet>
+<!--  Hidden fields used by the money fields and the
+                         conditions below.  -->
+<field name="currency_id" invisible="1"/>
+<field name="open_job_id" invisible="1"/>
+<field name="uses_default_rate" invisible="1"/>
+<!--  Context line: where the site stands today.  -->
+<group>
+<group>
+<!--  Fixed to the site the dialog was opened for.
+                                 force_save sends it to the server although
+                                 it is read-only.  -->
+<field name="site_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+<field name="days_since_clean"/>
+<field name="running_loss"/>
+</group>
+<group>
+<field name="cleaning_cost"/>
+<field name="current_loss_pct"/>
+<field name="dust_rate_pct"/>
+</group>
+</group>
+<!--  Input: 7 days by default, editable from 1 to 60
+                         (FR-SIM-03, FR-SIM-09). Changing it recalculates
+                         every figure at once.  -->
+<group>
+<group>
+<field name="wait_days"/>
+</group>
+</group>
+<!--  FR-SIM-02: two groups side by side. The second title
+                         repeats "Days to wait", so it follows the input.  -->
+<group>
+<group name="clean_now">
+<div class="o_horizontal_separator mt-2 mb-3 text-uppercase fw-bolder small" colspan="2"> Clean now </div>
+<field name="now_cycle_days" string="Cycle length (days)"/>
+<field name="now_electricity_loss" string="Electricity lost"/>
+<field name="now_cleaning_cost" string="Cleaning cost"/>
+<field name="now_total" string="Total cost of the cycle"/>
+<field name="now_cost_per_day" string="Cost per day"/>
+</group>
+<group name="wait">
+<div class="o_horizontal_separator mt-2 mb-3 text-uppercase fw-bolder small" colspan="2">
+Wait
+<field name="wait_days" readonly="1" nolabel="1" class="oe_inline"/>
+days
+</div>
+<field name="wait_cycle_days" string="Cycle length (days)"/>
+<field name="wait_electricity_loss" string="Electricity lost"/>
+<field name="wait_cleaning_cost" string="Cleaning cost"/>
+<field name="wait_total" string="Total cost of the cycle"/>
+<field name="wait_cost_per_day" string="Cost per day"/>
+</group>
+</group>
+<!--  Verdict in a highlighted box (FR-SIM-04), with the
+                         extra loss and the "Best day to clean" line
+                         (FR-SIM-07).  -->
+<div class="alert alert-info mb-2" role="status">
+<div class="fw-bold">
+<field name="verdict_text" nolabel="1"/>
+</div>
+<div>
+Extra electricity lost by waiting:
+<field name="extra_loss_if_wait" nolabel="1" class="oe_inline"/>
+</div>
+<div invisible="days_to_trigger != 0"> Best day to clean: now </div>
+<div invisible="days_to_trigger == 0">
+Best day to clean: in about
+<field name="days_to_trigger" nolabel="1" class="oe_inline"/>
+days
+</div>
+</div>
+<!--  FR-SIM-08: only when the default dust rate was used.  -->
+<div class="text-muted" invisible="not uses_default_rate"> Estimated with the default dust rate: too few days since the last clean. </div>
+</sheet>
+<footer>
+<!--  FR-SIM-06: one action button, depending on whether
+                         the site already has an open job.  -->
+<button name="action_request_clean" type="object" string="Request clean" class="btn-primary" groups="dustwatch.group_dustwatch_manager" invisible="open_job_id"/>
+<button name="action_open_job" type="object" string="Open cleaning job" class="btn-primary" invisible="not open_job_id"/>
+<button string="Close" class="btn-secondary" special="cancel"/>
+</footer>
+</form>
+</field>
+</record>
+</odoo>
